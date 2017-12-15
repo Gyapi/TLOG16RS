@@ -36,4 +36,3 @@ dependencies {
 run {
  args 'server'
 }
-
