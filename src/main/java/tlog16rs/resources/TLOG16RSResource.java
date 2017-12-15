@@ -27,5 +27,12 @@ public class TLOG16RSResource {
     @GET
     public String getNamedStringWithParam(@DefaultValue("world") @QueryParam("name") String name) {
         return "Hello " + name;
+    }    
+        
+    @Path("/hello_json")
+    @GET    
+    @Produces(MediaType.APPLICATION_JSON)
+    public Greeting getJSONGreeting() {
+        return new Greeting("Hello world!");
     }
 }
