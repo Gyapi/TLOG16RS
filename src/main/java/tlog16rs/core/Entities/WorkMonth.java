@@ -1,5 +1,6 @@
 package tlog16rs.core.Entities;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import tlog16rs.core.Exceptions.NotNewDateException;
 import tlog16rs.core.Exceptions.NotTheSameMonthException;
 import tlog16rs.core.Exceptions.WeekendNotEnabledException;
@@ -8,6 +9,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import tlog16rs.core.Util.WorkMonthSerializer;
 
 /**
  *
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
  */
 @lombok.Getter
 @lombok.Setter
+@JsonSerialize(using = WorkMonthSerializer.class)
 public class WorkMonth {
     
     //Fields

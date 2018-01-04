@@ -1,5 +1,6 @@
 package tlog16rs.core.Entities;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import tlog16rs.core.Util.Util;
 import tlog16rs.core.Exceptions.EmptyTimeFieldException;
 import tlog16rs.core.Exceptions.InvalidTaskIdException;
@@ -7,6 +8,7 @@ import tlog16rs.core.Exceptions.NoTaskIdException;
 import tlog16rs.core.Exceptions.NotExpectedTimeOrderException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import tlog16rs.core.Util.TaskSerializer;
 
 /**
  *
@@ -26,6 +28,7 @@ import java.time.format.DateTimeFormatter;
  */
 @lombok.Getter
 @lombok.Setter
+@JsonSerialize(using = TaskSerializer.class)
 public class Task {
     
     //Fields

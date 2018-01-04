@@ -1,5 +1,6 @@
 package tlog16rs.core.Entities;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import tlog16rs.core.Util.Util;
 import tlog16rs.core.Exceptions.EmptyTimeFieldException;
 import tlog16rs.core.Exceptions.FutureWorkException;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import tlog16rs.core.Util.WorkDaySerializer;
 
 /**
  *
@@ -30,6 +32,7 @@ import java.util.List;
  */
 @lombok.Getter
 @lombok.Setter
+@JsonSerialize(using = WorkDaySerializer.class)
 public class WorkDay {
     
     //Fields
