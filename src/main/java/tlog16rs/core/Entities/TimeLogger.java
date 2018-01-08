@@ -31,7 +31,6 @@ public class TimeLogger {
      */
     public void addMonth(WorkMonth m) 
             throws NotNewMonthException{
-        
         if (!isNewMonth(m)){
             throw new NotNewMonthException("This month already exists. Please try again.");
         }
@@ -46,7 +45,7 @@ public class TimeLogger {
      * @param m : {@link WorkMonth WorkMonth}
      * @return {@link Boolean Boolean}
      */
-    private boolean isNewMonth(WorkMonth  m){
+    public boolean isNewMonth(WorkMonth  m){
         
         List<WorkMonth> filteredMonth;
         

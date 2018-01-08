@@ -8,7 +8,7 @@ import tlog16rs.core.Exceptions.NoTaskIdException;
 import tlog16rs.core.Exceptions.NotExpectedTimeOrderException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import tlog16rs.core.Util.TaskSerializer;
+import tlog16rs.core.Serializers.TaskSerializer;
 
 /**
  *

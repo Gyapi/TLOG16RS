@@ -9,7 +9,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import tlog16rs.core.Util.WorkMonthSerializer;
+import tlog16rs.core.Serializers.WorkMonthSerializer;
 
 /**
  *
