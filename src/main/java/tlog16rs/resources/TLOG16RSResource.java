@@ -1,5 +1,6 @@
 package tlog16rs.resources;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.time.LocalDate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -7,18 +8,26 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
+import tlog16rs.core.Entities.Task;
 import tlog16rs.core.Entities.WorkDay;
 import tlog16rs.core.Entities.WorkMonth;
+import tlog16rs.core.Exceptions.EmptyTimeFieldException;
 import tlog16rs.core.Exceptions.FutureWorkException;
+import tlog16rs.core.Exceptions.InvalidTaskIdException;
 import tlog16rs.core.Exceptions.NegativeMinutesOfWorkException;
+import tlog16rs.core.Exceptions.NoTaskIdException;
+import tlog16rs.core.Exceptions.NotExpectedTimeOrderException;
 import tlog16rs.core.Exceptions.NotNewDateException;
 import tlog16rs.core.Exceptions.NotNewMonthException;
+import tlog16rs.core.Exceptions.NotSeparatedTimesException;
 import tlog16rs.core.Exceptions.NotTheSameMonthException;
 import tlog16rs.core.Exceptions.WeekendNotEnabledException;
 import tlog16rs.core.Util.Services;
+import tlog16rs.core.Util.TaskRB;
 import tlog16rs.core.Util.WorkDayRB;
 import tlog16rs.core.Util.WorkMonthRB;
 
@@ -84,6 +93,73 @@ public class TLOG16RSResource {
         return returned;
     }
     
+    @GET
+    @Path("/workdays/tasks")
+    public String getAllTasks(){
+        
+        return services.getTasks();
+        
+    }
+    
+    @POST
+    @Path("/workdays/tasks/start")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)    
+    public Task startTask(TaskRB task){
+        
+        Task returned = null;
+        
+        try {
+            returned = services.starTask(task);
+        } 
+        catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
+                NotNewDateException | WeekendNotEnabledException | InvalidTaskIdException |
+                NoTaskIdException | EmptyTimeFieldException | NotExpectedTimeOrderException |
+                NotSeparatedTimesException ex) {
+            log.error("POST, addNewTask : {} - {}.{}.{} - {} '{}' {}", task.getTaskId(), task.getYear(),
+                    task.getMonth(), task.getDay(), task.getStartTime(), task.getComment(), ex.toString());
+        }
+        
+        return returned;
+    }
+    
+    @GET
+    @Path("/workmonths/{year}/{month}")
+    public String getSelectedMonth(@PathParam(value = "year") String year,
+        @PathParam(value = "month") String month){
+        
+        String me = "";
+        
+        try {           
+            
+            me = services.getSelectedMonth(year, month);
+            
+        } catch (NumberFormatException | JsonProcessingException ex) {
+            log.error("GET, getSelectedMonth : {}.{} : {}", year, month, ex.toString());
+        }
+        
+        return me;
+    }
+    
+    @GET
+    @Path("/workmonths/{year}/{month}/{day}")
+    public String getSelectedDay(@PathParam(value = "year") String year,
+        @PathParam(value = "month") String month, @PathParam(value = "day") String day){
+        
+        String me = "";
+        
+        try {           
+            
+            me = services.getSelectedDay(year, month, day);
+            
+        } 
+        catch (NumberFormatException | JsonProcessingException ex) {
+            log.error("GET, getSelectedMonth : {}.{} : {}", year, month, ex.toString());
+        }
+        
+        return me;
+    }
+    
     //TODO: Javadoc, refactor hogy szebb legyen
     
     /*@GET
@@ -108,7 +184,5 @@ public class TLOG16RSResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Greeting getJSONGreeting() {
         return new Greeting("Hello world!");
-    }*/
-
-    
+    }*/    
 }

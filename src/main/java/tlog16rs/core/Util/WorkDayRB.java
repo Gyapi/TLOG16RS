@@ -14,9 +14,10 @@ package tlog16rs.core.Util;
 @lombok.Setter
 public class WorkDayRB {
     
-     int year;
-     int month; 
-     int day; 
-     int requiredHours;
-     boolean weekEnd; 
+    int year;
+    int month; 
+    int day; 
+    int requiredHours;
+    boolean weekEnd; 
+    
 }

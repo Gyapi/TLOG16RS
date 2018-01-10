@@ -12,9 +12,13 @@ package tlog16rs.core.Util;
 @lombok.NoArgsConstructor
 @lombok.Getter
 @lombok.Setter
-public class WorkMonthRB {
+public class TaskRB {
     
     int year;
-    int month;   
+    int month;
+    int day;
+    String taskId;
+    String startTime;
+    String comment;
     
 }

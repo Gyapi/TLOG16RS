@@ -8,6 +8,8 @@ package tlog16rs.core.Util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import lombok.extern.slf4j.Slf4j;
 import tlog16rs.core.Entities.Task;
 import tlog16rs.core.Entities.TimeLogger;
@@ -185,6 +187,98 @@ public class Services {
         }
         
         return newDay;
+    }
+    
+    public String getTasks(){
+
+        String returnMe = "";
+        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+
+        for (WorkMonth month : timelogger.getMonths()){
+            for (WorkDay day : month.getDays()){
+                for (Task task: day.getTasks()){
+                    try {
+                        returnMe += objectMapper.writeValueAsString(task) + "\n\n";
+                    }
+                    catch (JsonProcessingException ex) {
+                        log.error("{} : {}", LocalDate.now(), ex.toString());
+                    }
+                }
+                returnMe += "\n";  
+            }
+            returnMe += "\n";
+        }
+            
+        if (returnMe.isEmpty()){
+            returnMe = "Nothing is here";
+        }
+
+        return returnMe;  
+    }
+    
+    public Task starTask(TaskRB task) 
+            throws NotNewMonthException, FutureWorkException, NotTheSameMonthException, 
+            NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException,
+            NoTaskIdException, EmptyTimeFieldException, NotExpectedTimeOrderException,
+            NotSeparatedTimesException{
+        
+        WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
+        if (timelogger.isNewMonth(month)){
+            timelogger.addMonth(month);
+        }
+        
+        WorkDay day = new WorkDay(task.getYear(), task.getMonth(), task.getDay());
+        if (month.isNewDate(day)){
+            month.addWorkDay(day);            
+        }
+        
+        Task newTask = new Task(task.getTaskId());        
+        newTask.setComment(task.getComment());
+        newTask.setStartTime(task.getStartTime());
+        
+        day.addTask(newTask);
+        
+        return newTask;        
+    }
+    
+    public String getSelectedMonth(String wantedYear, String wantedMonth)
+        throws NumberFormatException, JsonProcessingException{
+        
+        String returnMe = "No such month exists";
+        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+        
+        WorkMonth selectedMonth = new WorkMonth(Integer.parseInt(wantedYear),
+                Integer.parseInt(wantedMonth));
+        
+        for (WorkMonth month : timelogger.getMonths()){
+            if (month.getDate().equals(selectedMonth.getDate())){
+                returnMe = objectMapper.writeValueAsString(month);
+            }
+        }
+        
+        return returnMe;
+    }
+    
+    public String getSelectedDay(String wantedYear, String wantedMonth, String wantedDay)
+        throws NumberFormatException, JsonProcessingException{
+        
+        String returnMe = "No such day exists";
+        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+        
+        WorkMonth selectedMonth = new WorkMonth(Integer.parseInt(wantedYear),
+                Integer.parseInt(wantedMonth));
+        
+        for (WorkMonth month : timelogger.getMonths()){
+            if (month.getDate().equals(selectedMonth.getDate())){
+                for (WorkDay day : month.getDays()){
+                    if (day.getActualDay().getDayOfMonth() == Integer.parseInt(wantedDay)){
+                        returnMe = objectMapper.writeValueAsString(day);
+                    }
+                }
+            }
+        }
+        
+        return returnMe;
     }
     
 }

@@ -127,7 +127,7 @@ public class WorkMonth {
      * @param d
      * @return 
      */
-    private boolean isNewDate(WorkDay d){
+    public boolean isNewDate(WorkDay d){
         
         List<WorkDay> filteredDay;
         
