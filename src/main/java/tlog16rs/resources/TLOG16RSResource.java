@@ -8,6 +8,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -26,6 +27,9 @@ import tlog16rs.core.Exceptions.NotNewMonthException;
 import tlog16rs.core.Exceptions.NotSeparatedTimesException;
 import tlog16rs.core.Exceptions.NotTheSameMonthException;
 import tlog16rs.core.Exceptions.WeekendNotEnabledException;
+import tlog16rs.core.Util.DeleteTaskRB;
+import tlog16rs.core.Util.FinishTaskRB;
+import tlog16rs.core.Util.ModifyTaskRB;
 import tlog16rs.core.Util.Services;
 import tlog16rs.core.Util.TaskRB;
 import tlog16rs.core.Util.WorkDayRB;
@@ -64,7 +68,7 @@ public class TLOG16RSResource {
     }
     
     @GET
-    @Path("/workdays")
+    @Path("/workmonths/workdays")
     public String getAllDays(){
         
         return services.getDays();
@@ -72,7 +76,7 @@ public class TLOG16RSResource {
     }
     
     @POST
-    @Path("/workdays")    
+    @Path("/workmonths/workdays")    
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public WorkDay addNewWorkDay(WorkDayRB day){
@@ -94,7 +98,7 @@ public class TLOG16RSResource {
     }
     
     @GET
-    @Path("/workdays/tasks")
+    @Path("/workmonths/workdays/tasks")
     public String getAllTasks(){
         
         return services.getTasks();
@@ -102,7 +106,7 @@ public class TLOG16RSResource {
     }
     
     @POST
-    @Path("/workdays/tasks/start")
+    @Path("/workmonths/workdays/tasks/start")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)    
     public Task startTask(TaskRB task){
@@ -160,29 +164,72 @@ public class TLOG16RSResource {
         return me;
     }
     
-    //TODO: Javadoc, refactor hogy szebb legyen
-    
-    /*@GET
-    public String getGreeting() {
-        return "Hello world!";
-    }    
-    
-    @Path("/{name}")
-    @GET
-    public String getNamedGreeting(@PathParam(value = "name") String name) {
-        return "Hello " + name + "!";
+    @PUT    
+    @Path("/workmonths/workdays/tasks/finish")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON) 
+    public Task finishTask(FinishTaskRB task){        
+                
+        Task returned = null;
+        
+        try {        
+            returned = services.finishThatThask(task);
+        } catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
+                NotNewDateException | WeekendNotEnabledException | InvalidTaskIdException | 
+                NotExpectedTimeOrderException | EmptyTimeFieldException | NoTaskIdException | 
+                NotSeparatedTimesException ex) {
+            log.error("PUT, FinishTask : {} - {}.{}.{} - {} - {}  {}", task.getTaskId(), task.getYear(),
+                    task.getMonth(), task.getDay(), task.getStartTime(), task.getEndTime(), ex.toString());
+        }
+        
+        return returned;
+        
     }
     
-    @Path("/query_param")
-    @GET
-    public String getNamedStringWithParam(@DefaultValue("world") @QueryParam("name") String name) {
-        return "Hello " + name;
-    }    
+    @PUT    
+    @Path("/workmonths/workdays/tasks/modify")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON) 
+    public Task modifyTask(ModifyTaskRB task){
         
-    @Path("/hello_json")
-    @GET    
-    @Produces(MediaType.APPLICATION_JSON)
-    public Greeting getJSONGreeting() {
-        return new Greeting("Hello world!");
-    }*/    
+        Task modifyMe = null;
+        
+        try {
+            
+            modifyMe = services.modifyTask(task);
+            
+        } 
+        catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
+                NotNewDateException | WeekendNotEnabledException | InvalidTaskIdException | 
+                NotExpectedTimeOrderException | EmptyTimeFieldException | NoTaskIdException | 
+                NotSeparatedTimesException ex) {
+            log.error("PUT, ModifyTask : {} - {}.{}.{} - {}  {}", task.getTaskId(), task.getYear(),
+                    task.getMonth(), task.getDay(), task.getStartTime(), ex.toString());
+        }
+        
+        return modifyMe;
+    }
+    
+    @PUT    
+    @Path("/workmonths/workdays/tasks/delete")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String removeTask(DeleteTaskRB task){
+        
+        String returnMe = "No such Task";
+        
+        try {
+            
+            if(services.deleteThisTask(task)){
+                returnMe = "Task deleted";
+            }            
+            
+        } catch (FutureWorkException | InvalidTaskIdException | NoTaskIdException ex) {
+            log.error("PUT, DeleteTask : {} - {}.{}.{} - {}  {}", task.getTaskId(), task.getYear(),
+                    task.getMonth(), task.getDay(), task.getStartTime(), ex.toString());
+        }
+        
+        return returnMe;
+    }
+    
+    //TODO: Javadoc, refactor hogy szebb legyen   
 }

@@ -32,7 +32,7 @@ import tlog16rs.core.Serializers.TaskSerializer;
 public class Task {
     
     //Fields
-    private final String taskId;
+    private String taskId;
     private LocalTime startTime;
     private LocalTime endTime;
     private String comment;
@@ -405,4 +405,21 @@ public class Task {
             }
         }    
     }
+    
+    public void setEndTime(LocalTime endTime) 
+            throws NotExpectedTimeOrderException, EmptyTimeFieldException{
+        
+        if (!this.startTime.isBefore(endTime)){
+            throw new NotExpectedTimeOrderException("Wrong time order. Please try again.");            
+        }
+        else {
+            if (!Util.isMultipleQuarterHour(this.startTime, endTime)){                
+                this.endTime = Util.roundToMultipleQuarterHour(this.startTime, endTime);
+            }
+            else {
+               this.endTime = endTime; 
+            }
+        }    
+    }
+    
 }

@@ -8,8 +8,7 @@ package tlog16rs.core.Util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.time.LocalTime;
 import lombok.extern.slf4j.Slf4j;
 import tlog16rs.core.Entities.Task;
 import tlog16rs.core.Entities.TimeLogger;
@@ -227,6 +226,7 @@ public class Services {
             timelogger.addMonth(month);
         }
         
+        //TODO: Ezt mindeképp újnak veszi te fasz
         WorkDay day = new WorkDay(task.getYear(), task.getMonth(), task.getDay());
         if (month.isNewDate(day)){
             month.addWorkDay(day);            
@@ -279,6 +279,210 @@ public class Services {
         }
         
         return returnMe;
+    }
+
+    public Task finishThatThask(FinishTaskRB task) 
+            throws NotNewMonthException, FutureWorkException, NotTheSameMonthException,
+            NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException,
+            NotExpectedTimeOrderException, EmptyTimeFieldException, NoTaskIdException, NotSeparatedTimesException {        
+        
+        WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
+        
+        if (timelogger.isNewMonth(month)){
+            timelogger.addMonth(month);
+        }
+        else {
+            for (WorkMonth selectedMonth: timelogger.getMonths()){
+                if (selectedMonth.getDate().equals(month.getDate())){
+                    month = selectedMonth;
+                    break;
+                }
+            }
+        }
+        
+        WorkDay day = new WorkDay(task.getYear(), task.getMonth(), task.getDay());
+        if (month.isNewDate(day)){
+            month.addWorkDay(day);
+        }
+        else{
+            for (WorkDay selectedDay : month.getDays()){
+                if (selectedDay.getActualDay().equals(day.getActualDay())){
+                    day = selectedDay;
+                    break;
+                }
+            }
+        }
+        
+        Task modifyThisTask = new Task(task.getTaskId(), "", task.getStartTime(), task.getEndTime());
+        boolean isItNew = true;        
+        if (day.getTasks().isEmpty()){
+            day.addTask(modifyThisTask);
+        }
+        else {
+            for (Task selectedTask : day.getTasks()){
+                if (selectedTask.getStartTime().equals(modifyThisTask.getStartTime()) && 
+                        selectedTask.getTaskId().equals(modifyThisTask.getTaskId())){
+                    isItNew = false;
+                    selectedTask.setEndTime(modifyThisTask.getEndTime());
+                }
+            }
+        }
+        
+        if (isItNew){
+           day.addTask(modifyThisTask); 
+        }
+        
+        return modifyThisTask;
+    }    
+
+    public Task modifyTask(ModifyTaskRB task) 
+            throws NotNewMonthException, FutureWorkException, NotTheSameMonthException, 
+            NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException, 
+            NotExpectedTimeOrderException, EmptyTimeFieldException, NoTaskIdException,
+            NotSeparatedTimesException {
+        
+        WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
+        
+        if (timelogger.isNewMonth(month)){
+            timelogger.addMonth(month);
+        }
+        else {
+            for (WorkMonth selectedMonth: timelogger.getMonths()){
+                if (selectedMonth.getDate().equals(month.getDate())){
+                    month = selectedMonth;
+                    break;
+                }
+            }
+        }
+        
+        WorkDay day = new WorkDay(task.getYear(), task.getMonth(), task.getDay());
+        if (month.isNewDate(day)){
+            month.addWorkDay(day);            
+        }
+        else{
+            for (WorkDay selectedDay : month.getDays()){
+                if (selectedDay.getActualDay().equals(day.getActualDay())){
+                    day = selectedDay;
+                    break;
+                }
+            }
+        }
+        
+        Task modified = null;     
+        LocalTime originalStart = LocalTime.parse(task.getStartTime());
+        boolean isItNew = true;        
+        if (day.getTasks().isEmpty()){
+            modified = createTask(task);
+            day.addTask(modified);
+        }
+        else {
+            for (Task selectedTask : day.getTasks()){
+                if (selectedTask.getStartTime().equals(originalStart) && 
+                        selectedTask.getTaskId().equals(task.getTaskId())){
+                    isItNew = false;
+                    modified = modifyThisTask(selectedTask, task);
+                    break;
+                }
+            }
+        }
+        
+        if (isItNew){
+            modified = createTask(task);
+            day.addTask(modified);
+        }
+        
+        return modified;        
+    }
+    
+    private Task createTask(ModifyTaskRB task)
+            throws InvalidTaskIdException, NoTaskIdException, 
+            EmptyTimeFieldException, NotExpectedTimeOrderException {
+        Task newTask;
+        
+        if (task.getNewTaskId() == null){
+            newTask = new Task(task.getTaskId());            
+        }
+        else{
+            newTask = new Task(task.getNewTaskId());           
+        }
+        
+        if (task.getNewStartTime() == null){
+            newTask.setStartTime(task.getStartTime());            
+        }
+        else{
+            newTask.setStartTime(task.getNewStartTime());            
+        }
+        if (task.getNewEndTime() != null){
+            newTask.setEndTime(task.getNewEndTime());
+        }
+        if (task.getNewComment() != null){
+            newTask.setComment(task.getNewComment());
+        }
+        
+        return newTask;        
+    }
+    
+    private Task modifyThisTask(Task selected, ModifyTaskRB modifier)
+            throws EmptyTimeFieldException, NotExpectedTimeOrderException{
+        
+        if (modifier.getNewTaskId()!= null){
+            selected.setTaskId(modifier.getNewTaskId());
+        }
+        if (modifier.getNewComment() != null){
+            selected.setComment(modifier.getNewComment());
+        }
+        if (modifier.getNewStartTime() != null){
+            selected.setStartTime(modifier.getNewStartTime());            
+                    }
+        if (modifier.getNewEndTime() != null){
+            selected.setEndTime(modifier.getNewEndTime());
+        }
+        
+        return selected;
+    }
+    
+    public boolean deleteThisTask(DeleteTaskRB task) 
+            throws FutureWorkException, InvalidTaskIdException, NoTaskIdException{
+        
+        WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
+        
+        if (timelogger.isNewMonth(month)){
+            return false;
+        }
+        else {
+            for (WorkMonth selectedMonth: timelogger.getMonths()){
+                if (selectedMonth.getDate().equals(month.getDate())){
+                    month = selectedMonth;
+                    break;
+                }
+            }
+        }
+        
+        WorkDay day = new WorkDay(task.getYear(), task.getMonth(), task.getDay());
+        if (month.isNewDate(day)){
+            return false;
+        }
+        else{
+            for (WorkDay selectedDay : month.getDays()){
+                if (selectedDay.getActualDay().equals(day.getActualDay())){
+                    day = selectedDay;
+                    break;
+                }
+            }
+        }
+        
+        Task deleteThis = new Task(task.getTaskId());        
+        LocalTime originalStart = LocalTime.parse(task.getStartTime());
+        for (Task selected : day.getTasks()) {
+            if (selected.getStartTime().equals(originalStart) && 
+                        selected.getTaskId().equals(task.getTaskId())){
+                day.getTasks().remove(selected);
+                selected = null;
+                return true;
+            }
+        }
+        
+        return false;       
     }
     
 }
