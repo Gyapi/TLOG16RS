@@ -113,6 +113,19 @@ public class TLOG16RSResource {
         return me;
     }
     
+    @PUT
+    @Path("/workmonths/deleteall")
+    public String deleteAllMonths(){
+        
+        String returnMe = "There is nothing here to delete";
+        
+        if (services.deleteAllMonths()){
+            returnMe = "All clear";
+        }
+        
+        return returnMe;
+    }
+    
     @POST
     @Path("/workmonths/workdays")    
     @Consumes(MediaType.APPLICATION_JSON)

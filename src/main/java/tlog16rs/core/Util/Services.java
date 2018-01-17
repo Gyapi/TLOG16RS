@@ -169,6 +169,24 @@ public class Services {
     }
     
     /**
+     * Deletes all {@link WorkMonth WorkMonth} object from the {@link Timelogger Timelogger's} list
+     * @return boolean
+     */
+    public boolean deleteAllMonths(){
+        
+        if (timelogger.getMonths().isEmpty()){
+            return false;
+        }
+        else {
+            for (WorkMonth month : timelogger.getMonths()){
+                month = null;
+            }
+            timelogger.getMonths().clear();
+            return true;
+        }
+    }
+    
+    /**
      * 
      * Returns all the {@link WorkDay WorkDays} from the designated {@link TimeLogger TimeLogger} object 
      * as a serialized {@link String String}
