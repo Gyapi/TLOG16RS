@@ -2,8 +2,6 @@ package tlog16rs.resources;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.time.LocalDate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
@@ -35,6 +33,12 @@ import tlog16rs.core.Util.TaskRB;
 import tlog16rs.core.Util.WorkDayRB;
 import tlog16rs.core.Util.WorkMonthRB;
 
+/**
+ * 
+ * Containt the endpoints od the application
+ * <br> Responsible for logging the errors
+ * @author Gyapi
+ */
 @Path("/timelogger")
 @Produces(MediaType.TEXT_PLAIN)
 @Slf4j
@@ -46,9 +50,26 @@ public class TLOG16RSResource {
     @Path("/workmonths")    
     public String getAllMonths(){
         
-        return services.makeItString();
+        return services.getMonths();
         
     }
+    
+    @GET
+    @Path("/workmonths/{year}/{month}")
+    public String getSelectedMonth(@PathParam(value = "year") String year,
+        @PathParam(value = "month") String month){
+        
+        String me = "";
+        
+        try {           
+            me = services.getSelectedMonth(year, month);            
+        } 
+        catch (NumberFormatException | JsonProcessingException ex) {
+            log.error("GET, getSelectedMonth : {}.{} : {}", year, month, ex.toString());
+        }
+        
+        return me;
+    }    
     
     @POST
     @Path("/workmonths")    
@@ -66,13 +87,30 @@ public class TLOG16RSResource {
         
         return workMonth;
     }
-    
+
     @GET
     @Path("/workmonths/workdays")
     public String getAllDays(){
         
         return services.getDays();
         
+    }
+    
+    @GET
+    @Path("/workmonths/{year}/{month}/{day}")
+    public String getSelectedDay(@PathParam(value = "year") String year,
+        @PathParam(value = "month") String month, @PathParam(value = "day") String day){
+        
+        String me = "";
+        
+        try {        
+            me = services.getSelectedDay(year, month, day);     
+        } 
+        catch (NumberFormatException | JsonProcessingException| FutureWorkException ex) {
+            log.error("GET, getSelectedMonth : {}.{} : {}", year, month, ex.toString());
+        }
+        
+        return me;
     }
     
     @POST
@@ -87,11 +125,9 @@ public class TLOG16RSResource {
             returned =  services.createDay(day);
         } 
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException | 
-                NotNewDateException | WeekendNotEnabledException ex) {
+                NotNewDateException | WeekendNotEnabledException | NegativeMinutesOfWorkException ex) {
             log.error("POST, addNewDay : {}.{}.{} : {} : {} : {}", day.getYear(), day.getMonth(), day.getDay(), 
                     day.isWeekEnd(), LocalDate.now(), ex.toString());
-        } catch (NegativeMinutesOfWorkException ex) {
-            Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return returned;
@@ -127,43 +163,6 @@ public class TLOG16RSResource {
         return returned;
     }
     
-    @GET
-    @Path("/workmonths/{year}/{month}")
-    public String getSelectedMonth(@PathParam(value = "year") String year,
-        @PathParam(value = "month") String month){
-        
-        String me = "";
-        
-        try {           
-            
-            me = services.getSelectedMonth(year, month);
-            
-        } catch (NumberFormatException | JsonProcessingException ex) {
-            log.error("GET, getSelectedMonth : {}.{} : {}", year, month, ex.toString());
-        }
-        
-        return me;
-    }
-    
-    @GET
-    @Path("/workmonths/{year}/{month}/{day}")
-    public String getSelectedDay(@PathParam(value = "year") String year,
-        @PathParam(value = "month") String month, @PathParam(value = "day") String day){
-        
-        String me = "";
-        
-        try {           
-            
-            me = services.getSelectedDay(year, month, day);
-            
-        } 
-        catch (NumberFormatException | JsonProcessingException ex) {
-            log.error("GET, getSelectedMonth : {}.{} : {}", year, month, ex.toString());
-        }
-        
-        return me;
-    }
-    
     @PUT    
     @Path("/workmonths/workdays/tasks/finish")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -174,7 +173,8 @@ public class TLOG16RSResource {
         
         try {        
             returned = services.finishThatThask(task);
-        } catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
+        } 
+        catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
                 NotNewDateException | WeekendNotEnabledException | InvalidTaskIdException | 
                 NotExpectedTimeOrderException | EmptyTimeFieldException | NoTaskIdException | 
                 NotSeparatedTimesException ex) {
@@ -182,8 +182,7 @@ public class TLOG16RSResource {
                     task.getMonth(), task.getDay(), task.getStartTime(), task.getEndTime(), ex.toString());
         }
         
-        return returned;
-        
+        return returned;        
     }
     
     @PUT    
@@ -194,10 +193,8 @@ public class TLOG16RSResource {
         
         Task modifyMe = null;
         
-        try {
-            
-            modifyMe = services.modifyTask(task);
-            
+        try {            
+            modifyMe = services.modifyTask(task);            
         } 
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
                 NotNewDateException | WeekendNotEnabledException | InvalidTaskIdException | 
@@ -217,19 +214,16 @@ public class TLOG16RSResource {
         
         String returnMe = "No such Task";
         
-        try {
-            
+        try {            
             if(services.deleteThisTask(task)){
                 returnMe = "Task deleted";
             }            
-            
-        } catch (FutureWorkException | InvalidTaskIdException | NoTaskIdException ex) {
+        } catch (FutureWorkException | InvalidTaskIdException | NoTaskIdException | 
+                EmptyTimeFieldException |  NotExpectedTimeOrderException ex) {
             log.error("PUT, DeleteTask : {} - {}.{}.{} - {}  {}", task.getTaskId(), task.getYear(),
                     task.getMonth(), task.getDay(), task.getStartTime(), ex.toString());
         }
         
         return returnMe;
     }
-    
-    //TODO: Javadoc, refactor hogy szebb legyen   
 }

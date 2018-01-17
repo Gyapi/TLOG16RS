@@ -334,9 +334,6 @@ public class Task {
     public void setStartTime(LocalTime startTime) 
             throws EmptyTimeFieldException, NotExpectedTimeOrderException {        
 
-        if (this.endTime == null){
-            throw new EmptyTimeFieldException("End time missing. Please try again.");            
-        }
         if (this.endTime != null && !startTime.isBefore(this.endTime)){
             throw new NotExpectedTimeOrderException("Wrong time order. Please try again.");
         }
@@ -406,6 +403,16 @@ public class Task {
         }    
     }
     
+     /**
+     * Sets values to the {@link #endTime endTime}
+     * Checks if the {@link #startTime startTime} and the {@link #endTime endTime} is in the correct order
+     * <br> Uses the {@link Util#isMultipleQuarterHour(java.time.LocalTime, java.time.LocalTime)
+     * isMultipleQuarterHour}, {@link Util#roundToMultipleQuarterHour(java.time.LocalTime, java.time.LocalTime) 
+     * roundToMultipleQuarterHour} methods.
+     * @param endTime : {@link LocalTime LocalTime} which must be in the following format: HH:mm 
+     * @throws tlog16rs.core.Exceptions.NotExpectedTimeOrderException 
+     * @throws tlog16rs.core.Exceptions.EmptyTimeFieldException 
+     */
     public void setEndTime(LocalTime endTime) 
             throws NotExpectedTimeOrderException, EmptyTimeFieldException{
         

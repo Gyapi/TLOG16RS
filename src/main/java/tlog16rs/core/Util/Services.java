@@ -28,10 +28,12 @@ import tlog16rs.core.Exceptions.WeekendNotEnabledException;
 
 /**
  *
+ * A class containing the actual methods of the endpoints
+ * <br> The setters, which does not require special code, are generated through Lombok
+ * <br> @see <a href="https://projectlombok.org/">https://projectlombok.org/</a>
  * @author Gyapi
  */
 @lombok.Getter
-@lombok.Setter
 @Slf4j
 public class Services {
     
@@ -111,7 +113,14 @@ public class Services {
         //---------------------------------------------
     }
     
-    public String makeItString(){
+    /**
+     * 
+     * Returns all the {@link WorkMonth WorkMonths} from the designated {@link TimeLogger TimeLogger} object 
+     * as a serialized {@link String String}
+     * Uses the {@link tlog16rs.core.Serializers.WorkMonthSerializer WorkMonthSerializer} class
+     * @return String
+     */    
+    public String getMonths(){
         
         String returnMe = "";
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -131,7 +140,41 @@ public class Services {
 
         return returnMe;
     }
+    
+    /**
+     * 
+     * Gives back the selected {@link WorkMonth WorkMonth} as a serialized {@link String String}
+     * Uses the {@link WorkMonthSerializer WorkMonthSerializer} class
+     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector} method
+     * @param wantedYear
+     * @param wantedMonth
+     * @return String
+     * @throws NumberFormatException
+     * @throws JsonProcessingException 
+     */
+    public String getSelectedMonth(String wantedYear, String wantedMonth)
+        throws NumberFormatException, JsonProcessingException{
+        
+        String returnMe = "No such month exists";
+        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+        
+        WorkMonth selectedMonth = new WorkMonth(Integer.parseInt(wantedYear),
+                Integer.parseInt(wantedMonth));
 
+        if (!timelogger.isNewMonth(selectedMonth)){
+            returnMe = objectMapper.writeValueAsString(monthSelector(selectedMonth));
+        }
+
+        return returnMe;
+    }
+    
+    /**
+     * 
+     * Returns all the {@link WorkDay WorkDays} from the designated {@link TimeLogger TimeLogger} object 
+     * as a serialized {@link String String}
+     * Uses the {@link WorkDaySerializer WorkDaySerializer} class
+     * @return String
+     */  
     public String getDays() {
 
         String returnMe = "";
@@ -155,39 +198,55 @@ public class Services {
 
         return returnMe;  
     }
-
-    public WorkDay createDay(WorkDayRB day) 
-            throws NotNewMonthException, FutureWorkException, NotTheSameMonthException,
-            NotTheSameMonthException, NotNewDateException, NotNewDateException, WeekendNotEnabledException,
-            NegativeMinutesOfWorkException {
-        WorkMonth month = new WorkMonth(day.getYear(), day.getMonth());
-        WorkDay newDay = null;
+    
+        /**
+     * 
+     * Returns the selected {@link WorkDay WorkDay} as a serialized {@link String String}
+     * Uses {@link WorkDaySerializer WorkDaySerializer} as serializer
+     * @param wantedYear
+     * @param wantedMonth
+     * @param wantedDay
+     * @return String
+     * @throws NumberFormatException
+     * @throws JsonProcessingException
+     * @throws FutureWorkException 
+     */
+    public String getSelectedDay(String wantedYear, String wantedMonth, String wantedDay)
+        throws NumberFormatException, JsonProcessingException, FutureWorkException{
         
-        if (timelogger.isNewMonth(month)){
-            timelogger.addMonth(month);
-        }
+        String returnMe = "No such day exists";
+        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
         
-        if (day.getRequiredHours() == 0){
-            newDay = new WorkDay(day.getYear(), day.getMonth(), day.getDay());            
+        WorkMonth selectedMonth = new WorkMonth(Integer.parseInt(wantedYear),
+                Integer.parseInt(wantedMonth));
+        if (!timelogger.isNewMonth(selectedMonth)){
+            selectedMonth = monthSelector(selectedMonth);
         }
         else{
-            newDay = new WorkDay(day.getRequiredHours(), day.getYear(), day.getMonth(), day.getDay());
+            return returnMe;
         }
         
-        for (WorkMonth selected : timelogger.getMonths()){
-            if (selected.getDate().equals(month.getDate())){
-                if (day.isWeekEnd()){
-                    selected.addWorkDay(newDay, true);
-                }
-                else{
-                    selected.addWorkDay(newDay);
-                }
+        WorkDay selectedDay = new WorkDay(Integer.parseInt(wantedYear), Integer.parseInt(wantedMonth),
+                Integer.parseInt(wantedDay));
+        if(selectedMonth.isNewDate(selectedDay)){
+            return returnMe;
+        }
+        for (WorkDay day : selectedMonth.getDays()){
+            if (day.getActualDay().equals(selectedDay.getActualDay())){
+                return objectMapper.writeValueAsString(day);                
             }
         }
         
-        return newDay;
+        return returnMe;
     }
     
+    /**
+     * 
+     * Returns all the {@link Task Tasks} from the designated {@link TimeLogger TimeLogger} object 
+     * as a serialized {@link String String}
+     * Uses the {@link TaskSerializer TaskSerializer} class
+     * @return String
+     */  
     public String getTasks(){
 
         String returnMe = "";
@@ -197,7 +256,7 @@ public class Services {
             for (WorkDay day : month.getDays()){
                 for (Task task: day.getTasks()){
                     try {
-                        returnMe += objectMapper.writeValueAsString(task) + "\n\n";
+                        returnMe += objectMapper.writeValueAsString(task) + "\n";
                     }
                     catch (JsonProcessingException ex) {
                         log.error("{} : {}", LocalDate.now(), ex.toString());
@@ -214,73 +273,116 @@ public class Services {
 
         return returnMe;  
     }
+      
+    /**
+     * 
+     * Created a new {@link WorkDay WorkDay} object from the given {@link WorkDayRB workDayRB} object
+     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector} method
+     * @param day
+     * @return
+     * @throws NotNewMonthException
+     * @throws FutureWorkException
+     * @throws NotTheSameMonthException
+     * @throws NotNewDateException
+     * @throws WeekendNotEnabledException
+     * @throws NegativeMinutesOfWorkException 
+     */
+    public WorkDay createDay(WorkDayRB day) 
+            throws NotNewMonthException, FutureWorkException, NotTheSameMonthException,
+            NotNewDateException, WeekendNotEnabledException, NegativeMinutesOfWorkException {
+        
+        WorkMonth month = new WorkMonth(day.getYear(), day.getMonth());   
+        if (timelogger.isNewMonth(month)){
+            timelogger.addMonth(month);
+        }
+        else{
+            month = monthSelector(month);
+        }
+        
+        WorkDay newDay = null;        
+        if (day.getRequiredHours() == 0){
+            newDay = new WorkDay(day.getYear(), day.getMonth(), day.getDay());            
+        }
+        else{
+            newDay = new WorkDay(day.getRequiredHours(), day.getYear(), day.getMonth(), day.getDay());
+        }
+        
+        if (day.isWeekEnd()){
+            month.addWorkDay(newDay, true);
+        }
+        else{
+            month.addWorkDay(newDay);
+        }
+        
+        return newDay;
+    }
     
+    /**
+     * Starts a new {@link Task Task} object from the given {@link TaskRB TaskRB} object
+     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector, 
+     * {@link #daySelector(tlog16rs.core.Entities.WorkMonth, tlog16rs.core.Entities.WorkDay)  dayselector} methods
+     * @param task
+     * @return Task
+     * @throws NotNewMonthException
+     * @throws FutureWorkException
+     * @throws NotTheSameMonthException
+     * @throws NotNewDateException
+     * @throws WeekendNotEnabledException
+     * @throws InvalidTaskIdException
+     * @throws NoTaskIdException
+     * @throws EmptyTimeFieldException
+     * @throws NotExpectedTimeOrderException
+     * @throws NotSeparatedTimesException 
+     */
     public Task starTask(TaskRB task) 
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException, 
             NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException,
             NoTaskIdException, EmptyTimeFieldException, NotExpectedTimeOrderException,
             NotSeparatedTimesException{
         
-        WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
+        WorkMonth month = new WorkMonth(task.getYear(), task.getMonth()); 
         if (timelogger.isNewMonth(month)){
             timelogger.addMonth(month);
         }
+        else{
+            month = monthSelector(month);
+        }
         
-        //TODO: Ezt mindeképp újnak veszi te fasz
         WorkDay day = new WorkDay(task.getYear(), task.getMonth(), task.getDay());
         if (month.isNewDate(day)){
-            month.addWorkDay(day);            
+            month.addWorkDay(day);
+        }
+        else{
+            day = daySelector(month, day);            
         }
         
         Task newTask = new Task(task.getTaskId());        
         newTask.setComment(task.getComment());
-        newTask.setStartTime(task.getStartTime());
-        
+        newTask.setStartTime(task.getStartTime());        
         day.addTask(newTask);
         
         return newTask;        
-    }
+    }  
     
-    public String getSelectedMonth(String wantedYear, String wantedMonth)
-        throws NumberFormatException, JsonProcessingException{
-        
-        String returnMe = "No such month exists";
-        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
-        
-        WorkMonth selectedMonth = new WorkMonth(Integer.parseInt(wantedYear),
-                Integer.parseInt(wantedMonth));
-        
-        for (WorkMonth month : timelogger.getMonths()){
-            if (month.getDate().equals(selectedMonth.getDate())){
-                returnMe = objectMapper.writeValueAsString(month);
-            }
-        }
-        
-        return returnMe;
-    }
-    
-    public String getSelectedDay(String wantedYear, String wantedMonth, String wantedDay)
-        throws NumberFormatException, JsonProcessingException{
-        
-        String returnMe = "No such day exists";
-        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
-        
-        WorkMonth selectedMonth = new WorkMonth(Integer.parseInt(wantedYear),
-                Integer.parseInt(wantedMonth));
-        
-        for (WorkMonth month : timelogger.getMonths()){
-            if (month.getDate().equals(selectedMonth.getDate())){
-                for (WorkDay day : month.getDays()){
-                    if (day.getActualDay().getDayOfMonth() == Integer.parseInt(wantedDay)){
-                        returnMe = objectMapper.writeValueAsString(day);
-                    }
-                }
-            }
-        }
-        
-        return returnMe;
-    }
-
+     /**
+     * 
+     * Finishes the selected {@link Task task} with the given {@link TaskRB TaskRB's} properties
+     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth)  monthSelector},
+     * {@link #daySelector(tlog16rs.core.Entities.WorkMonth, tlog16rs.core.Entities.WorkDay)  daySelector}, 
+     * {@link #taskSelector(tlog16rs.core.Entities.WorkDay, tlog16rs.core.Entities.Task)  taskSelector} methods
+     * @param task
+     * @return Task
+     * @throws NotNewMonthException
+     * @throws FutureWorkException
+     * @throws NotTheSameMonthException
+     * @throws NotNewDateException
+     * @throws WeekendNotEnabledException
+     * @throws InvalidTaskIdException
+     * @throws NotExpectedTimeOrderException
+     * @throws EmptyTimeFieldException
+     * @throws NoTaskIdException
+     * @throws NotSeparatedTimesException 
+     */
     public Task finishThatThask(FinishTaskRB task) 
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException,
             NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException,
@@ -292,12 +394,7 @@ public class Services {
             timelogger.addMonth(month);
         }
         else {
-            for (WorkMonth selectedMonth: timelogger.getMonths()){
-                if (selectedMonth.getDate().equals(month.getDate())){
-                    month = selectedMonth;
-                    break;
-                }
-            }
+            month = monthSelector(month);
         }
         
         WorkDay day = new WorkDay(task.getYear(), task.getMonth(), task.getDay());
@@ -305,36 +402,49 @@ public class Services {
             month.addWorkDay(day);
         }
         else{
-            for (WorkDay selectedDay : month.getDays()){
-                if (selectedDay.getActualDay().equals(day.getActualDay())){
-                    day = selectedDay;
-                    break;
-                }
-            }
+            day = daySelector(month, day);
         }
         
-        Task modifyThisTask = new Task(task.getTaskId(), "", task.getStartTime(), task.getEndTime());
-        boolean isItNew = true;        
+        Task workWithMe = new Task(task.getTaskId(), "", task.getStartTime(), task.getEndTime());  
+        Task modifyThisTask = null;
         if (day.getTasks().isEmpty()){
-            day.addTask(modifyThisTask);
+            day.addTask(workWithMe);
+            modifyThisTask = workWithMe;
         }
         else {
-            for (Task selectedTask : day.getTasks()){
-                if (selectedTask.getStartTime().equals(modifyThisTask.getStartTime()) && 
-                        selectedTask.getTaskId().equals(modifyThisTask.getTaskId())){
-                    isItNew = false;
-                    selectedTask.setEndTime(modifyThisTask.getEndTime());
-                }
+            modifyThisTask = taskSelector(day, workWithMe);
+            if (modifyThisTask == null){
+                day.addTask(workWithMe);
+                modifyThisTask = workWithMe;           
             }
-        }
-        
-        if (isItNew){
-           day.addTask(modifyThisTask); 
-        }
+            else{
+                modifyThisTask.setEndTime(workWithMe.getEndTime());
+            }
+        }     
         
         return modifyThisTask;
     }    
 
+        /**
+     * 
+     * Modifies the selected {@link Task Task}
+     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) nthSelector monthSelector},
+     * {@link #daySelector(tlog16rs.core.Entities.WorkMonth, tlog16rs.core.Entities.WorkDay) daySelector}, 
+     * {@link #taskSelector taskSelector}, {@link #createTask(tlog16rs.core.Util.ModifyTaskRB) createTask},
+     * {@link #modifyThisTask(tlog16rs.core.Entities.Task, tlog16rs.core.Util.ModifyTaskRB) modifyThisTask} methods
+     * @param task
+     * @return Task
+     * @throws NotNewMonthException
+     * @throws FutureWorkException
+     * @throws NotTheSameMonthException
+     * @throws NotNewDateException
+     * @throws WeekendNotEnabledException
+     * @throws InvalidTaskIdException
+     * @throws NotExpectedTimeOrderException
+     * @throws EmptyTimeFieldException
+     * @throws NoTaskIdException
+     * @throws NotSeparatedTimesException 
+     */
     public Task modifyTask(ModifyTaskRB task) 
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException, 
             NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException, 
@@ -347,12 +457,7 @@ public class Services {
             timelogger.addMonth(month);
         }
         else {
-            for (WorkMonth selectedMonth: timelogger.getMonths()){
-                if (selectedMonth.getDate().equals(month.getDate())){
-                    month = selectedMonth;
-                    break;
-                }
-            }
+            month = monthSelector(month);
         }
         
         WorkDay day = new WorkDay(task.getYear(), task.getMonth(), task.getDay());
@@ -360,43 +465,152 @@ public class Services {
             month.addWorkDay(day);            
         }
         else{
-            for (WorkDay selectedDay : month.getDays()){
-                if (selectedDay.getActualDay().equals(day.getActualDay())){
-                    day = selectedDay;
-                    break;
-                }
-            }
+            day = daySelector(month, day);
         }
         
-        Task modified = null;     
-        LocalTime originalStart = LocalTime.parse(task.getStartTime());
-        boolean isItNew = true;        
+        Task modified = null;            
         if (day.getTasks().isEmpty()){
             modified = createTask(task);
             day.addTask(modified);
         }
         else {
-            for (Task selectedTask : day.getTasks()){
-                if (selectedTask.getStartTime().equals(originalStart) && 
-                        selectedTask.getTaskId().equals(task.getTaskId())){
-                    isItNew = false;
-                    modified = modifyThisTask(selectedTask, task);
-                    break;
-                }
+            modified = taskSelector(day, createTask(task));
+            if (modified == null){
+                modified = createTask(task);
+                day.addTask(modified);
             }
-        }
-        
-        if (isItNew){
-            modified = createTask(task);
-            day.addTask(modified);
+            
+           modified = modifyThisTask(modified, task); 
         }
         
         return modified;        
     }
     
-    private Task createTask(ModifyTaskRB task)
-            throws InvalidTaskIdException, NoTaskIdException, 
-            EmptyTimeFieldException, NotExpectedTimeOrderException {
+        /**
+     * 
+     * Deletes the chosen {@link Task Task} based on the parameters of the given 
+     * {@link DeleteTaskRB DeleteTaskRB}
+     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) nthSelector monthSelector},
+     * {@link #daySelector(tlog16rs.core.Entities.WorkMonth, tlog16rs.core.Entities.WorkDay) daySelector}, 
+     * {@link #taskSelector taskSelector}, {@link #createTask(tlog16rs.core.Util.ModifyTaskRB) createTask} methods
+     * @param task
+     * @return boolean
+     * @throws FutureWorkException
+     * @throws InvalidTaskIdException
+     * @throws NoTaskIdException
+     * @throws EmptyTimeFieldException
+     * @throws NotExpectedTimeOrderException 
+     */
+    public boolean deleteThisTask(DeleteTaskRB task) 
+            throws FutureWorkException, InvalidTaskIdException, NoTaskIdException, 
+            EmptyTimeFieldException, NotExpectedTimeOrderException{
+        
+        WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
+        
+        if (timelogger.isNewMonth(month)){
+            return false;
+        }
+        else {
+            month = monthSelector(month);
+        }
+        
+        WorkDay day = new WorkDay(task.getYear(), task.getMonth(), task.getDay());
+        if (month.isNewDate(day)){
+            return false;
+        }
+        else{
+            day = daySelector(month, day);
+        }
+        
+        Task deleteThis = new Task(task.getTaskId());        
+        LocalTime originalStart = LocalTime.parse(task.getStartTime());
+        deleteThis.setStartTime(originalStart);
+        deleteThis = taskSelector(day, deleteThis);
+        if (deleteThis == null){
+            return false;
+        }
+        else{
+            day.getTasks().remove(deleteThis);
+            deleteThis = null;
+            return true;
+            }      
+    }
+    
+    /**
+     * 
+     * Based on the given {@link WorkMonth WorkMonth's} date, finds it in the {@link TimeLogger Timelogger's}
+     * month list and gives it back
+     * @param month
+     * @return WorkMonth 
+     */
+    private WorkMonth monthSelector(WorkMonth month){
+        
+        WorkMonth returnMe = null;
+        
+        for (WorkMonth wmonth : timelogger.getMonths()){
+            if (wmonth.getDate().equals(month.getDate())){
+                return wmonth;
+            }
+        }
+        
+        return returnMe;
+    }
+    
+    /**
+     * 
+     * Based on the given {@link WorkDay WorkDay's} date, finds it in the {@link WorkMonth WorkMonth's}
+     * month list and gives it back
+     * @param month
+     * @param day
+     * @return WorkDay
+     */
+    private WorkDay daySelector(WorkMonth month, WorkDay day){
+        
+        WorkDay returnMe = null;
+        
+        for (WorkDay wday : month.getDays()){
+            if (wday.getActualDay().equals(day.getActualDay())){
+                return wday;
+            }
+        }
+        
+        return returnMe;
+    }
+    
+    /**
+     * 
+     * Based on the given {@link Task Task's} propeties, selects it from the given
+     * {@link WorkDay WorkDay's} task list
+     * @param day
+     * @param task
+     * @return Task
+     */
+    private Task taskSelector(WorkDay day, Task task){
+        
+        Task returnMe = null;        
+        for (Task selectedTask : day.getTasks()){
+                if (selectedTask.getStartTime().equals(task.getStartTime()) && 
+                        selectedTask.getTaskId().equals(task.getTaskId())){                    
+                    return selectedTask;
+                }
+            }
+        
+        return returnMe;
+    } 
+
+    /**
+     * 
+     * Creates a new {@link Task Task} object from the given {@link ModifyTaskRB ModifyTaskRB}
+     * @param task
+     * @return Task
+     * @throws InvalidTaskIdException
+     * @throws NoTaskIdException
+     * @throws EmptyTimeFieldException
+     * @throws NotExpectedTimeOrderException 
+     */
+    private Task createTask(ModifyTaskRB task) 
+            throws InvalidTaskIdException, NoTaskIdException,
+            EmptyTimeFieldException, NotExpectedTimeOrderException{
         Task newTask;
         
         if (task.getNewTaskId() == null){
@@ -407,7 +621,7 @@ public class Services {
         }
         
         if (task.getNewStartTime() == null){
-            newTask.setStartTime(task.getStartTime());            
+            newTask.setStartTime(task.getStartTime()); 
         }
         else{
             newTask.setStartTime(task.getNewStartTime());            
@@ -422,6 +636,15 @@ public class Services {
         return newTask;        
     }
     
+    /**
+     * 
+     * Modifies the given {@link Task Task} with the given {@link ModifyTaskRB ModifyTaskRB's} properties
+     * @param selected
+     * @param modifier
+     * @return
+     * @throws EmptyTimeFieldException
+     * @throws NotExpectedTimeOrderException 
+     */
     private Task modifyThisTask(Task selected, ModifyTaskRB modifier)
             throws EmptyTimeFieldException, NotExpectedTimeOrderException{
         
@@ -439,50 +662,6 @@ public class Services {
         }
         
         return selected;
-    }
-    
-    public boolean deleteThisTask(DeleteTaskRB task) 
-            throws FutureWorkException, InvalidTaskIdException, NoTaskIdException{
-        
-        WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
-        
-        if (timelogger.isNewMonth(month)){
-            return false;
-        }
-        else {
-            for (WorkMonth selectedMonth: timelogger.getMonths()){
-                if (selectedMonth.getDate().equals(month.getDate())){
-                    month = selectedMonth;
-                    break;
-                }
-            }
-        }
-        
-        WorkDay day = new WorkDay(task.getYear(), task.getMonth(), task.getDay());
-        if (month.isNewDate(day)){
-            return false;
-        }
-        else{
-            for (WorkDay selectedDay : month.getDays()){
-                if (selectedDay.getActualDay().equals(day.getActualDay())){
-                    day = selectedDay;
-                    break;
-                }
-            }
-        }
-        
-        Task deleteThis = new Task(task.getTaskId());        
-        LocalTime originalStart = LocalTime.parse(task.getStartTime());
-        for (Task selected : day.getTasks()) {
-            if (selected.getStartTime().equals(originalStart) && 
-                        selected.getTaskId().equals(task.getTaskId())){
-                day.getTasks().remove(selected);
-                selected = null;
-                return true;
-            }
-        }
-        
-        return false;       
     }
     
 }
