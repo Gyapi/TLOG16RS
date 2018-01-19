@@ -1,6 +1,7 @@
 package tlog16rs.resources;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
@@ -10,6 +11,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 import tlog16rs.core.Entities.Task;
 import tlog16rs.core.Entities.WorkDay;
@@ -50,8 +52,13 @@ public class TLOG16RSResource {
     @Path("/workmonths")    
     public String getAllMonths(){
         
-        return services.getMonths();
-        
+        try {        
+            return services.getMonths();
+        } 
+        catch (JsonProcessingException ex) {
+            log.error("{} : @GET, getAllMonths : {}", LocalDate.now(), ex.toString());
+            return LocalDate.now() + "\n@GET, getAllMonths\n" + ex.toString();
+        }
     }
     
     @GET
@@ -59,41 +66,52 @@ public class TLOG16RSResource {
     public String getSelectedMonth(@PathParam(value = "year") String year,
         @PathParam(value = "month") String month){
         
-        String me = "";
-        
         try {           
-            me = services.getSelectedMonth(year, month);            
+            return services.getSelectedMonth(year, month);            
         } 
-        catch (NumberFormatException | JsonProcessingException ex) {
-            log.error("GET, getSelectedMonth : {}.{} : {}", year, month, ex.toString());
+        catch (NumberFormatException | JsonProcessingException | DateTimeException ex) {
+            log.error("{} : @GET, getSelectedMonth : {}.{} : {}", LocalDate.now(), year, month, ex.toString());
+           return LocalDate.now() + "\n@GET getSelectedMonth : " + year + "." + month + "\n" + ex.toString();
         }
-        
-        return me;
     }    
     
     @POST
     @Path("/workmonths")    
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public WorkMonth addNewMonth(WorkMonthRB month) {
+    public Response addNewMonth(WorkMonthRB month) {
         
         WorkMonth workMonth = new WorkMonth(month.getYear(), month.getMonth());
+        
         try {
             services.getTimelogger().addMonth(workMonth);
+            return Response.ok(workMonth).build();
         } 
-        catch (NotNewMonthException ex) {
-            log.error("POST, addNewMonth : {} : {} : {}", workMonth.getDate(), LocalDate.now(), ex.toString());
+        catch (NotNewMonthException  | DateTimeException ex) {
+            log.error("{} : @POST, addNewMonth : {} : {}", LocalDate.now(), workMonth.getDate(), ex.toString());
+            return Response.status(409).entity("Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" + 
+                    "@POST, addNewMonth : " + workMonth.getDate().toString() + "\n" + ex.toString()).build();
         }
+    }
+    
+    @PUT
+    @Path("/workmonths/deleteall")
+    public String deleteAllMonths(){
         
-        return workMonth;
+        return services.deleteAllMonths(); 
     }
 
     @GET
     @Path("/workmonths/workdays")
     public String getAllDays(){
         
-        return services.getDays();
-        
+        try {
+            return services.getDays();
+        }
+        catch (JsonProcessingException ex) {
+            log.error("{} : @GET, getAllDays : {}", LocalDate.now(), ex.toString());
+            return LocalDate.now() + "\n@GET, getAllDays\n" + ex.toString();
+        }        
     }
     
     @GET
@@ -101,123 +119,119 @@ public class TLOG16RSResource {
     public String getSelectedDay(@PathParam(value = "year") String year,
         @PathParam(value = "month") String month, @PathParam(value = "day") String day){
         
-        String me = "";
-        
         try {        
-            me = services.getSelectedDay(year, month, day);     
+            return services.getSelectedDay(year, month, day);     
         } 
-        catch (NumberFormatException | JsonProcessingException| FutureWorkException ex) {
-            log.error("GET, getSelectedMonth : {}.{} : {}", year, month, ex.toString());
+        catch (NumberFormatException | JsonProcessingException| FutureWorkException | DateTimeException ex) {
+            log.error( "{} : @GET, getSelectedDay : {}.{}.{} : {}",LocalDate.now(), year, month, day, ex.toString());
+            return LocalDate.now() + "\n@GET getSelectedDay : " + year + "." + month + "." + day + 
+                    "\n" + ex.toString();
         }
-        
-        return me;
-    }
-    
-    @PUT
-    @Path("/workmonths/deleteall")
-    public String deleteAllMonths(){
-        
-        String returnMe = "There is nothing here to delete";
-        
-        if (services.deleteAllMonths()){
-            returnMe = "All clear";
-        }
-        
-        return returnMe;
     }
     
     @POST
     @Path("/workmonths/workdays")    
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public WorkDay addNewWorkDay(WorkDayRB day){
-        
-        WorkDay returned = null;
+    public Response addNewWorkDay(WorkDayRB day){
         
         try {
-            returned =  services.createDay(day);
+            WorkDay workDay =  services.createDay(day);
+            return Response.ok(workDay).build();
         } 
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException | 
-                NotNewDateException | WeekendNotEnabledException | NegativeMinutesOfWorkException ex) {
-            log.error("POST, addNewDay : {}.{}.{} : {} : {} : {}", day.getYear(), day.getMonth(), day.getDay(), 
-                    day.isWeekEnd(), LocalDate.now(), ex.toString());
+                NotNewDateException | WeekendNotEnabledException | NegativeMinutesOfWorkException  
+                | DateTimeException ex) {
+            log.error("{} : @POST, addNewDay : {}.{}.{} : {} : {}", LocalDate.now(),
+                    day.getYear(), day.getMonth(), day.getDay(), day.isWeekEnd(), ex.toString());
+            return Response.status(409).entity("Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" + 
+                    "@POST, addNewMonth : " + day.getYear() + "." + day.getMonth() + "." + day.getDay() + 
+                    "\n" + ex.toString()).build();
         }
-        
-        return returned;
     }
     
     @GET
     @Path("/workmonths/workdays/tasks")
     public String getAllTasks(){
         
-        return services.getTasks();
-        
+        try {
+            return services.getTasks();
+        } 
+        catch (JsonProcessingException ex) {
+            log.error("{} : @GET, getAllTasks : {}", LocalDate.now(), ex.toString());
+            return LocalDate.now() + "\n@GET, getAllTasks\n" + ex.toString();
+        }        
     }
     
     @POST
     @Path("/workmonths/workdays/tasks/start")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)    
-    public Task startTask(TaskRB task){
-        
-        Task returned = null;
+    public Response startTask(TaskRB task){
         
         try {
-            returned = services.starTask(task);
+           Task startedTask = services.starTask(task);
+           return Response.ok(startedTask).build();
         } 
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
                 NotNewDateException | WeekendNotEnabledException | InvalidTaskIdException |
                 NoTaskIdException | EmptyTimeFieldException | NotExpectedTimeOrderException |
                 NotSeparatedTimesException ex) {
-            log.error("POST, addNewTask : {} - {}.{}.{} - {} '{}' {}", task.getTaskId(), task.getYear(),
-                    task.getMonth(), task.getDay(), task.getStartTime(), task.getComment(), ex.toString());
+            log.error("{} : @POST, startTask : {} - {}.{}.{} - {} '{}' {}", LocalDate.now(), 
+                    task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
+                    task.getComment(), ex.toString());
+            return Response.status(409).entity("Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" + 
+                    "@POST, startTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
+                    "." + task.getDay() + " : " +  task.getStartTime() + " : '" + task.getComment() + "'\n" +
+                    ex.toString()).build();
         }
-        
-        return returned;
     }
     
     @PUT    
     @Path("/workmonths/workdays/tasks/finish")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON) 
-    public Task finishTask(FinishTaskRB task){        
-                
-        Task returned = null;
+    public Response finishTask(FinishTaskRB task){        
         
         try {        
-            returned = services.finishThatThask(task);
+            Task finishedTask = services.finishThatThask(task);
+            return Response.ok(finishedTask).build();
         } 
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
                 NotNewDateException | WeekendNotEnabledException | InvalidTaskIdException | 
                 NotExpectedTimeOrderException | EmptyTimeFieldException | NoTaskIdException | 
                 NotSeparatedTimesException ex) {
-            log.error("PUT, FinishTask : {} - {}.{}.{} - {} - {}  {}", task.getTaskId(), task.getYear(),
-                    task.getMonth(), task.getDay(), task.getStartTime(), task.getEndTime(), ex.toString());
-        }
-        
-        return returned;        
+            log.error("{} : @PUT, startTask : {} - {}.{}.{} - {} - {} : {}", LocalDate.now(), 
+                    task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
+                    task.getEndTime(), ex.toString());
+            return Response.status(409).entity("Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" + 
+                    "@PUT, startTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
+                    "." + task.getDay() + " : " +  task.getStartTime() + " - " + task.getEndTime() + "\n" +
+                    ex.toString()).build();
+        }  
     }
     
     @PUT    
     @Path("/workmonths/workdays/tasks/modify")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON) 
-    public Task modifyTask(ModifyTaskRB task){
-        
-        Task modifyMe = null;
+    public Response modifyTask(ModifyTaskRB task){
         
         try {            
-            modifyMe = services.modifyTask(task);            
+            Task modifiedTask = services.modifyTask(task);    
+            return Response.ok(modifiedTask).build();
         } 
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
                 NotNewDateException | WeekendNotEnabledException | InvalidTaskIdException | 
                 NotExpectedTimeOrderException | EmptyTimeFieldException | NoTaskIdException | 
                 NotSeparatedTimesException ex) {
-            log.error("PUT, ModifyTask : {} - {}.{}.{} - {}  {}", task.getTaskId(), task.getYear(),
-                    task.getMonth(), task.getDay(), task.getStartTime(), ex.toString());
+            log.error("{} : @PUT, modifyTask : {} - {}.{}.{} - {} : {}", LocalDate.now(), 
+                    task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
+                    ex.toString());
+            return Response.status(409).entity("Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" + 
+                    "@PUT, modifyTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
+                    "." + task.getDay() + " : " +  task.getStartTime() + "\n" + ex.toString()).build();
         }
-        
-        return modifyMe;
     }
     
     @PUT    
@@ -225,18 +239,20 @@ public class TLOG16RSResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public String removeTask(DeleteTaskRB task){
         
-        String returnMe = "No such Task";
-        
         try {            
             if(services.deleteThisTask(task)){
-                returnMe = "Task deleted";
-            }            
+                return "Task deleted";
+            }   
+            else{
+                return "No such Task";
+            }
         } catch (FutureWorkException | InvalidTaskIdException | NoTaskIdException | 
                 EmptyTimeFieldException |  NotExpectedTimeOrderException ex) {
-            log.error("PUT, DeleteTask : {} - {}.{}.{} - {}  {}", task.getTaskId(), task.getYear(),
-                    task.getMonth(), task.getDay(), task.getStartTime(), ex.toString());
+            log.error("{} : @PUT, removeTask : {} - {}.{}.{} - {} : {}", LocalDate.now(), task.getTaskId(),
+                    task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), ex.toString());
+            return "Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" +  "@PUT, removeTask : " + 
+                    task.getTaskId() + " : " + task.getStartTime() + "\n" + ex.toString();
+            
         }
-        
-        return returnMe;
     }
 }

@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
-import tlog16rs.core.Entities.WorkDay;
 import tlog16rs.core.Entities.WorkMonth;
 
 /**

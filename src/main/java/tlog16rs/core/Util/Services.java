@@ -7,7 +7,6 @@ package tlog16rs.core.Util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import lombok.extern.slf4j.Slf4j;
 import tlog16rs.core.Entities.Task;
@@ -41,7 +40,7 @@ public class Services {
 
     public Services() {
         timelogger = new TimeLogger();
-        createContent();
+        //createContent();
     }
     
     private void createContent(){
@@ -119,26 +118,23 @@ public class Services {
      * as a serialized {@link String String}
      * Uses the {@link tlog16rs.core.Serializers.WorkMonthSerializer WorkMonthSerializer} class
      * @return String
+     * @throws com.fasterxml.jackson.core.JsonProcessingException
      */    
-    public String getMonths(){
+    public String getMonths() 
+            throws JsonProcessingException{
         
         String returnMe = "";
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
-
-        for (WorkMonth month : timelogger.getMonths()){
-            try{
+        
+        if (timelogger.getMonths().isEmpty()){
+            return "Nothing is here";
+        }
+        else{            
+            for (WorkMonth month : timelogger.getMonths()){
                 returnMe += objectMapper.writeValueAsString(month) + "\n\n";
-            }
-            catch (JsonProcessingException ex){
-                log.error("{} : {}", LocalDate.now(), ex.toString());
-            }
+            }            
+            return returnMe;
         }
-
-        if (returnMe.isEmpty()){
-            returnMe = "Nothing is here";
-        }
-
-        return returnMe;
     }
     
     /**
@@ -169,21 +165,20 @@ public class Services {
     }
     
     /**
+     * 
      * Deletes all {@link WorkMonth WorkMonth} object from the {@link Timelogger Timelogger's} list
-     * @return boolean
+     * @return String
      */
-    public boolean deleteAllMonths(){
-        
-        if (timelogger.getMonths().isEmpty()){
-            return false;
-        }
-        else {
-            for (WorkMonth month : timelogger.getMonths()){
+    public String deleteAllMonths(){
+                
+        if (!timelogger.getMonths().isEmpty()){
+            timelogger.getMonths().forEach((month) -> {
                 month = null;
-            }
+            });
             timelogger.getMonths().clear();
-            return true;
+            return "Deletetion of WorkMonths: SUCCESSFUL";
         }
+        return "There is nothing to delete here.";
     }
     
     /**
@@ -192,32 +187,74 @@ public class Services {
      * as a serialized {@link String String}
      * Uses the {@link WorkDaySerializer WorkDaySerializer} class
      * @return String
+     * @throws com.fasterxml.jackson.core.JsonProcessingException
      */  
-    public String getDays() {
+    public String getDays() 
+            throws JsonProcessingException {
 
-        String returnMe = "";
+        String returnMe = "Nothing is here";
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
-        for (WorkMonth month : timelogger.getMonths()){
-            for (WorkDay day : month.getDays()){
-                try {          
-                    returnMe += objectMapper.writeValueAsString(day) + "\n\n";
-                } 
-                catch (JsonProcessingException ex) {
-                    log.error("{} : {}", LocalDate.now(), ex.toString());
-                }        
-            }
-            returnMe += "\n";
+        if (timelogger.getMonths().isEmpty()){
+            return returnMe;
         }
-            
-        if (returnMe.isEmpty()){
-            returnMe = "Nothing is here";
+        else{
+            for (WorkMonth month : timelogger.getMonths()){
+                if (!month.getDays().isEmpty()){
+                    for (WorkDay day : month.getDays()){      
+                        returnMe += objectMapper.writeValueAsString(day) + "\n\n";    
+                    }
+                    returnMe += "\n";
+                }
+            }  
+            return returnMe; 
+        } 
+    }
+          
+    /**
+     * 
+     * Created a new {@link WorkDay WorkDay} object from the given {@link WorkDayRB workDayRB} object
+     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector} method
+     * @param day
+     * @return
+     * @throws NotNewMonthException
+     * @throws FutureWorkException
+     * @throws NotTheSameMonthException
+     * @throws NotNewDateException
+     * @throws WeekendNotEnabledException
+     * @throws NegativeMinutesOfWorkException 
+     */
+    public WorkDay createDay(WorkDayRB day) 
+            throws NotNewMonthException, FutureWorkException, NotTheSameMonthException,
+            NotNewDateException, WeekendNotEnabledException, NegativeMinutesOfWorkException {
+        
+        WorkMonth month = new WorkMonth(day.getYear(), day.getMonth());   
+        if (timelogger.isNewMonth(month)){
+            timelogger.addMonth(month);
         }
-
-        return returnMe;  
+        else{
+            month = monthSelector(month);
+        }
+        
+        WorkDay newDay = null;        
+        if (day.getRequiredHours() == 0){
+            newDay = new WorkDay(day.getYear(), day.getMonth(), day.getDay());            
+        }
+        else{
+            newDay = new WorkDay(day.getRequiredHours(), day.getYear(), day.getMonth(), day.getDay());
+        }
+        
+        if (day.isWeekEnd()){
+            month.addWorkDay(newDay, true);
+        }
+        else{
+            month.addWorkDay(newDay);
+        }
+        
+        return newDay;
     }
     
-        /**
+    /**
      * 
      * Returns the selected {@link WorkDay WorkDay} as a serialized {@link String String}
      * Uses {@link WorkDaySerializer WorkDaySerializer} as serializer
@@ -264,75 +301,33 @@ public class Services {
      * as a serialized {@link String String}
      * Uses the {@link TaskSerializer TaskSerializer} class
      * @return String
+     * @throws com.fasterxml.jackson.core.JsonProcessingException
      */  
-    public String getTasks(){
+    public String getTasks() 
+            throws JsonProcessingException{
 
-        String returnMe = "";
+        String returnMe = "Nothing is here";
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
-        for (WorkMonth month : timelogger.getMonths()){
-            for (WorkDay day : month.getDays()){
-                for (Task task: day.getTasks()){
-                    try {
-                        returnMe += objectMapper.writeValueAsString(task) + "\n";
+        if (timelogger.getMonths().isEmpty()){
+            return returnMe;
+        }
+        else{
+            for (WorkMonth month : timelogger.getMonths()){
+                if (!month.getDays().isEmpty()){
+                    for (WorkDay day : month.getDays()){
+                        if (!day.getTasks().isEmpty()){
+                            for (Task task: day.getTasks()){
+                                returnMe += objectMapper.writeValueAsString(task) + "\n";
+                            }
+                            returnMe += "\n";  
+                        }
                     }
-                    catch (JsonProcessingException ex) {
-                        log.error("{} : {}", LocalDate.now(), ex.toString());
-                    }
+                    returnMe += "\n";
                 }
-                returnMe += "\n";  
             }
-            returnMe += "\n";
+            return returnMe;  
         }
-            
-        if (returnMe.isEmpty()){
-            returnMe = "Nothing is here";
-        }
-
-        return returnMe;  
-    }
-      
-    /**
-     * 
-     * Created a new {@link WorkDay WorkDay} object from the given {@link WorkDayRB workDayRB} object
-     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector} method
-     * @param day
-     * @return
-     * @throws NotNewMonthException
-     * @throws FutureWorkException
-     * @throws NotTheSameMonthException
-     * @throws NotNewDateException
-     * @throws WeekendNotEnabledException
-     * @throws NegativeMinutesOfWorkException 
-     */
-    public WorkDay createDay(WorkDayRB day) 
-            throws NotNewMonthException, FutureWorkException, NotTheSameMonthException,
-            NotNewDateException, WeekendNotEnabledException, NegativeMinutesOfWorkException {
-        
-        WorkMonth month = new WorkMonth(day.getYear(), day.getMonth());   
-        if (timelogger.isNewMonth(month)){
-            timelogger.addMonth(month);
-        }
-        else{
-            month = monthSelector(month);
-        }
-        
-        WorkDay newDay = null;        
-        if (day.getRequiredHours() == 0){
-            newDay = new WorkDay(day.getYear(), day.getMonth(), day.getDay());            
-        }
-        else{
-            newDay = new WorkDay(day.getRequiredHours(), day.getYear(), day.getMonth(), day.getDay());
-        }
-        
-        if (day.isWeekEnd()){
-            month.addWorkDay(newDay, true);
-        }
-        else{
-            month.addWorkDay(newDay);
-        }
-        
-        return newDay;
     }
     
     /**
@@ -424,7 +419,7 @@ public class Services {
         }
         
         Task workWithMe = new Task(task.getTaskId(), "", task.getStartTime(), task.getEndTime());  
-        Task modifyThisTask = null;
+        Task modifyThisTask;
         if (day.getTasks().isEmpty()){
             day.addTask(workWithMe);
             modifyThisTask = workWithMe;
@@ -486,7 +481,7 @@ public class Services {
             day = daySelector(month, day);
         }
         
-        Task modified = null;            
+        Task modified;            
         if (day.getTasks().isEmpty()){
             modified = createTask(task);
             day.addTask(modified);
