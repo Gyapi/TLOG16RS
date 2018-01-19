@@ -4,6 +4,7 @@ import tlog16rs.resources.TLOG16RSResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import tlog16rs.core.Util.TLOG16RSHealthCheck;
 
 public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
 
@@ -25,5 +26,7 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
     public void run(final TLOG16RSConfiguration configuration,
                     final Environment environment) {
         environment.jersey().register(new TLOG16RSResource());
+        //TODO: Kéne majd ide egy different name
+        environment.healthChecks().register("dummy", new TLOG16RSHealthCheck());
     }
 }
