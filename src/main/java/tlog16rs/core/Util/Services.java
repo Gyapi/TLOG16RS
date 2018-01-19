@@ -201,6 +201,7 @@ public class Services {
         else{
             for (WorkMonth month : timelogger.getMonths()){
                 if (!month.getDays().isEmpty()){
+                    returnMe = "";
                     for (WorkDay day : month.getDays()){      
                         returnMe += objectMapper.writeValueAsString(day) + "\n\n";    
                     }
@@ -317,6 +318,7 @@ public class Services {
                 if (!month.getDays().isEmpty()){
                     for (WorkDay day : month.getDays()){
                         if (!day.getTasks().isEmpty()){
+                            returnMe = "";
                             for (Task task: day.getTasks()){
                                 returnMe += objectMapper.writeValueAsString(task) + "\n";
                             }
