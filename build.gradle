@@ -15,8 +15,13 @@ scmVersion {
 project.version = scmVersion.version
 
 project.ext {
+    lombokVersion = '1.16.10'
     dropwizardVersion = '1.2.2'   
     jacksonVersion = '2.9.3'  
+    ebeanVersion = '11.9.1'
+    mariaDbVersion = '2.2.1'
+    avajeEbeanormVersion = '8.1.1'
+    liquibaseVersion = '3.5.3'
 }
 
 mainClassName = "tlog16rs.TLOG16RSApplication"
@@ -27,11 +32,16 @@ repositories {
 
 dependencies {
 
-    compile group: 'org.projectlombok', name: 'lombok', version: '1.16.10'
+    compile group: 'org.projectlombok', name: 'lombok', version: lombokVersion
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion	
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-modules-java8', version: jacksonVersion, ext: 'pom'
+    compile group: 'io.ebean', name: 'ebean', version: ebeanVersion
+    compile group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: mariaDbVersion
+    compile group: 'org.avaje.ebeanorm', name: 'avaje-ebeanorm', version: avajeEbeanormVersion
+    compile group: 'org.avaje.ebeanorm', name: 'avaje-ebeanorm-agent', version: avajeEbeanormVersion
+    compile group: 'org.liquibase', name: 'liquibase-core', version: liquibaseVersion
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'io.dropwizard', name: 'dropwizard-testing',  version: '1.2.2'	
         
@@ -39,4 +49,17 @@ dependencies {
 
 run {
  args 'server'
+ systemProperties = System.properties
+}
+
+classes.doLast {
+    javaexec { // Ebean enchancement
+        classpath = sourceSets.main.compileClasspath
+        main = 'com.avaje.ebean.enhance.ant.MainTransform'
+        args = [
+			compileJava.destinationDir,
+                'tlog16rs.core.entities',
+                'debug=1'
+        ]
+    }
 }

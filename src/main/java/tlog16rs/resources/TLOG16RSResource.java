@@ -1,5 +1,6 @@
 package tlog16rs.resources;
 
+import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 import tlog16rs.core.Entities.Task;
+import tlog16rs.core.Entities.TestEntity;
 import tlog16rs.core.Entities.WorkDay;
 import tlog16rs.core.Entities.WorkMonth;
 import tlog16rs.core.Exceptions.EmptyTimeFieldException;
@@ -255,4 +257,16 @@ public class TLOG16RSResource {
             
         }
     }
+    
+    @POST
+    @Path("/save/test")
+    @Consumes(MediaType.TEXT_PLAIN)
+    public String newTestEntity(String text){
+        
+        TestEntity test = new TestEntity(text);
+        Ebean.save(test);
+        
+        return text;
+    }
+    
 }
