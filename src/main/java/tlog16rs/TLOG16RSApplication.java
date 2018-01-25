@@ -5,8 +5,6 @@ import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import liquibase.exception.LiquibaseException;
 import lombok.extern.slf4j.Slf4j;
 import tlog16rs.core.Util.TLOG16RSHealthCheck;
@@ -33,16 +31,15 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
     public void run(final TLOG16RSConfiguration configuration,
                     final Environment environment) {
         //Endpoints
-        environment.jersey().register(new TLOG16RSResource());
+        environment.jersey().register(new TLOG16RSResource());        
         //HealthCheck
-        //TODO: Kéne majd ide egy different name
-        environment.healthChecks().register("dummy", new TLOG16RSHealthCheck());
+        environment.healthChecks().register("HealthCheck", new TLOG16RSHealthCheck());
         try {
             //Database
-            CreateDatabase database = new CreateDatabase();
+            CreateDatabase database = new CreateDatabase(configuration);
         } 
         catch (SQLException | LiquibaseException ex) {
            log.error(ex.toString());
-        }
+        }        
     }
 }

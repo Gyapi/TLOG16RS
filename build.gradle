@@ -48,8 +48,7 @@ dependencies {
 }
 
 run {
- args 'server'
- systemProperties = System.properties
+    args 'server', 'src/dist/config.yml'
 }
 
 classes.doLast {

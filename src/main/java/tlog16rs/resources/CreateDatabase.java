@@ -11,8 +11,6 @@ import com.avaje.ebean.config.ServerConfig;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.jvm.JdbcConnection;
@@ -20,6 +18,7 @@ import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.extern.slf4j.Slf4j;
 import org.avaje.datasource.DataSourceConfig;
+import tlog16rs.TLOG16RSConfiguration;
 import tlog16rs.core.Entities.TestEntity;
 
 
@@ -34,43 +33,41 @@ public class CreateDatabase {
     private ServerConfig serverConfig;
     private EbeanServer ebeanServer;
 
-    public CreateDatabase() 
+    public CreateDatabase(TLOG16RSConfiguration config) 
             throws SQLException, LiquibaseException {
        
-        updateSchema();
-        configDataSource();
-        configServer();
+        updateSchema(config);
+        initDataSourceConfig(config);
+        initServerConfig (config);
         createServer();
         
     } 
     
-    private void updateSchema() throws SQLException, LiquibaseException{
-        System.setProperty("dbDriver", "org.mariadb.jdbc.Driver");
-        System.setProperty("dbUrl", "jdbc:mariadb://127.0.0.1:9001/timelogger");
-        System.setProperty("dbUser", "timelogger");
-        System.setProperty("dbPassword", "633Ym2aZ5b9Wtzh4EJc4pANx");
-        //TODO: Át kell majd ezt baszni hogy a yamlbó szedje ki
+    private void updateSchema(TLOG16RSConfiguration config)
+            throws SQLException, LiquibaseException{
         
-        Connection connection = DriverManager.getConnection(System.getProperty("dbURL"),
-                System.getProperty("dbUser"), System.getProperty("dbPassword"));
-        
+        Connection connection = getConnection(config);        
         Liquibase liquibase = new Liquibase("migrations.xml", new ClassLoaderResourceAccessor(),
-                new JdbcConnection(connection));
-        
+                new JdbcConnection(connection));        
          liquibase.update(new Contexts());
     }
     
-    private void configDataSource(){        
-        dataSourceConfig = new DataSourceConfig();
-        dataSourceConfig.setDriver(System.getProperty("dbDriver"));
-        dataSourceConfig.setUrl(System.getProperty("dbURL")); 
-        dataSourceConfig.setUsername(System.getProperty("dbUser"));
-        dataSourceConfig.setPassword(System.getProperty("dbPassword"));
+    private Connection getConnection(TLOG16RSConfiguration config) 
+            throws SQLException{
+        return DriverManager.getConnection(config.getDbUrl(), config.getDbUser(), config.getDbPassword());
     }
     
-    private void configServer(){
+    private void initDataSourceConfig(TLOG16RSConfiguration config){        
+        dataSourceConfig = new DataSourceConfig();
+        dataSourceConfig.setDriver(config.getDbDriver());
+        dataSourceConfig.setUrl(config.getDbUrl()); 
+        dataSourceConfig.setUsername(config.getDbUser());
+        dataSourceConfig.setPassword(config.getDbPassword());
+    }
+    
+    private void initServerConfig (TLOG16RSConfiguration config){
         serverConfig = new ServerConfig();
-        serverConfig.setName("timelogger");
+        serverConfig.setName(config.getDbName());
         serverConfig.setDdlGenerate(false);
         serverConfig.setDdlRun(false);
         serverConfig.setRegister(true);
@@ -81,5 +78,10 @@ public class CreateDatabase {
     
     private void createServer(){
         ebeanServer = EbeanServerFactory.create(serverConfig);
+    }
+    
+    public boolean ping(){
+        //TODO: Hibernate get metod database halthcheckelni
+        return true;
     }
 }

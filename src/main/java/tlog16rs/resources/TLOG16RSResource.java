@@ -264,6 +264,7 @@ public class TLOG16RSResource {
     public String newTestEntity(String text){
         
         TestEntity test = new TestEntity(text);
+        
         Ebean.save(test);
         
         return text;
