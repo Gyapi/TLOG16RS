@@ -19,7 +19,7 @@ import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.extern.slf4j.Slf4j;
 import org.avaje.datasource.DataSourceConfig;
 import tlog16rs.TLOG16RSConfiguration;
-import tlog16rs.core.Entities.TestEntity;
+import tlog16rs.entities.TimeLogger;
 
 
 /**
@@ -72,7 +72,7 @@ public class CreateDatabase {
         serverConfig.setDdlRun(false);
         serverConfig.setRegister(true);
         serverConfig.setDataSourceConfig(dataSourceConfig);
-        serverConfig.addClass(TestEntity.class);
+        serverConfig.addClass(TimeLogger.class);
         serverConfig.setDefaultServer(true);
     }
     

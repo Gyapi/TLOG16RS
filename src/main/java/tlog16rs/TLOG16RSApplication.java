@@ -7,7 +7,7 @@ import io.dropwizard.setup.Environment;
 import java.sql.SQLException;
 import liquibase.exception.LiquibaseException;
 import lombok.extern.slf4j.Slf4j;
-import tlog16rs.core.Util.TLOG16RSHealthCheck;
+import tlog16rs.resources.utilities.TLOG16RSHealthCheck;
 import tlog16rs.resources.CreateDatabase;
 
 @Slf4j

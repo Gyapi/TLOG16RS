@@ -14,28 +14,27 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
-import tlog16rs.core.Entities.Task;
-import tlog16rs.core.Entities.TestEntity;
-import tlog16rs.core.Entities.WorkDay;
-import tlog16rs.core.Entities.WorkMonth;
-import tlog16rs.core.Exceptions.EmptyTimeFieldException;
-import tlog16rs.core.Exceptions.FutureWorkException;
-import tlog16rs.core.Exceptions.InvalidTaskIdException;
-import tlog16rs.core.Exceptions.NegativeMinutesOfWorkException;
-import tlog16rs.core.Exceptions.NoTaskIdException;
-import tlog16rs.core.Exceptions.NotExpectedTimeOrderException;
-import tlog16rs.core.Exceptions.NotNewDateException;
-import tlog16rs.core.Exceptions.NotNewMonthException;
-import tlog16rs.core.Exceptions.NotSeparatedTimesException;
-import tlog16rs.core.Exceptions.NotTheSameMonthException;
-import tlog16rs.core.Exceptions.WeekendNotEnabledException;
-import tlog16rs.core.Util.DeleteTaskRB;
-import tlog16rs.core.Util.FinishTaskRB;
-import tlog16rs.core.Util.ModifyTaskRB;
-import tlog16rs.core.Util.Services;
-import tlog16rs.core.Util.TaskRB;
-import tlog16rs.core.Util.WorkDayRB;
-import tlog16rs.core.Util.WorkMonthRB;
+import tlog16rs.entities.Task;
+import tlog16rs.entities.WorkDay;
+import tlog16rs.entities.WorkMonth;
+import tlog16rs.exceptions.EmptyTimeFieldException;
+import tlog16rs.exceptions.FutureWorkException;
+import tlog16rs.exceptions.InvalidTaskIdException;
+import tlog16rs.exceptions.NegativeMinutesOfWorkException;
+import tlog16rs.exceptions.NoTaskIdException;
+import tlog16rs.exceptions.NotExpectedTimeOrderException;
+import tlog16rs.exceptions.NotNewDateException;
+import tlog16rs.exceptions.NotNewMonthException;
+import tlog16rs.exceptions.NotSeparatedTimesException;
+import tlog16rs.exceptions.NotTheSameMonthException;
+import tlog16rs.exceptions.WeekendNotEnabledException;
+import tlog16rs.resources.RBobjects.DeleteTaskRB;
+import tlog16rs.resources.RBobjects.FinishTaskRB;
+import tlog16rs.resources.RBobjects.ModifyTaskRB;
+import tlog16rs.resources.utilities.Services;
+import tlog16rs.resources.RBobjects.TaskRB;
+import tlog16rs.resources.RBobjects.WorkDayRB;
+import tlog16rs.resources.RBobjects.WorkMonthRB;
 
 /**
  * 
@@ -256,18 +255,5 @@ public class TLOG16RSResource {
                     task.getTaskId() + " : " + task.getStartTime() + "\n" + ex.toString();
             
         }
-    }
-    
-    @POST
-    @Path("/save/test")
-    @Consumes(MediaType.TEXT_PLAIN)
-    public String newTestEntity(String text){
-        
-        TestEntity test = new TestEntity(text);
-        
-        Ebean.save(test);
-        
-        return text;
-    }
-    
+    }    
 }
