@@ -22,7 +22,7 @@ import tlog16rs.resources.serializers.WorkMonthSerializer;
 
 /**
  *
- * The WorkMonth class handles the collection of {@link WorkDay WorkDay}s
+ * The {@link WorkMonth WorkMonth} class handles the collection of {@link WorkDay WorkDays}
  * <br>
  * <br>{@link #days days} : {@link ArrayList ArrayList} that collects the {@link WorkDay WorkDay}s
  * <br>{@link #date date} : {@link YearMonth YearMonth} field, it contains the identity of the month (year, month)
@@ -86,7 +86,8 @@ public class WorkMonth {
      *
      * Adds a {@link WorkDay WorkDay} to the {@link ArrayList list}: {@link #days days}, 
      * after validating it.
-     * <br>Uses the {@link #sumsPerMonth() sumsPerMonth} method
+     * <br>if sucessful calls the {@link #sumsPerMonth() sumsPerMonth}, {@link #requiredPerMonth() requiredPerMonth}
+     * methods
      * 
      * @param wd : the {@link WorkDay WorkDay} object the method will validate, and add to the list
      * @param isWeekendEnabled : {@link Boolean boolean} objec. If the employee wants to work on the weekend,

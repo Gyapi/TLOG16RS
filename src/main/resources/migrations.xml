@@ -34,7 +34,6 @@
                 <constraints nullable="false"/>
             </column>
             <column name="required_min_per_day" type="int" />
-            <!-- TODO: Ezt valahol a mentésnél kell rendezni -->
             <column name="extra_min_per_day" type="int" />
             <column name="actual_day" type="date" />  
             <column name="sum_per_day" type="int" />          
