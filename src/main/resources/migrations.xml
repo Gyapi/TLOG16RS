@@ -50,7 +50,6 @@
             <column name="start_time" type="time" />
             <column name="end_time" type="time" />
             <column name="comment" type="varchar(255)" />  
-            <!-- TODO: Ezt valahol a mentésnél kell rendezni -->
             <column name="min_per_task" type="int" />           
         </createTable>
         

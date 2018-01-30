@@ -41,7 +41,6 @@ import tlog16rs.resources.serializers.WorkDaySerializer;
  */
 @Entity
 @lombok.Getter
-@lombok.Setter
 @JsonSerialize(using = WorkDaySerializer.class)
 public class WorkDay {
     
