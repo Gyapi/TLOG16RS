@@ -47,14 +47,17 @@ public class Task {
     private LocalTime endTime;
     @Column(name = "comment")
     private String comment;
+    //TODO: UPDATE-kor nézzél már rá
+    @Column (name = "min_per_task")
+    private long minPerTask;
     
     /**
      * 
-     * Creates a new {@link Task Task} object from the required parameters
+     * Creates a new {@link Task Task} object from the required parameters.
      * <br> Uses the 
      * {@link #fillWithValidValues(java.lang.String, java.lang.String, java.time.LocalTime, java.time.LocalTime) 
      * fillWithValidValues}, {@link #timeConvert(java.lang.String) timeConvert},
-     * {@link #timeConvert(int, int) timeConvert}, {@link #taskIDCheck(java.lang.String) taskIDCheck} methods.
+     * {@link #timeConvert(int, int) timeConvert}, {@link #taskIDCheck(java.lang.String) taskIDCheck} methods
      * 
      * @param taskId : {@link String String} with one of the following formats: LT-(4 digit number) || 4 digit number
      * Validated trough: {@link #isValidTaskId(String taskID) isValidTaskId}
@@ -89,11 +92,11 @@ public class Task {
 
     /**
      * 
-     * Creates a new Task object from the required parameters
+     * Creates a new Task object from the required parameters.
      * <br> Uses the 
      * {@link #fillWithValidValues(java.lang.String, java.lang.String, java.time.LocalTime, java.time.LocalTime) 
      * fillWithValidValues}, {@link #timeConvert(java.lang.String) timeConvert},
-     * {@link #timeConvert(int, int) timeConvert}, {@link #taskIDCheck(java.lang.String) taskIDCheck} methods.
+     * {@link #timeConvert(int, int) timeConvert}, {@link #taskIDCheck(java.lang.String) taskIDCheck} methods
      * 
      * @param taskId : {@link String String} with one of the following formats: LT-(4 digit number) || 4 digit number
      * Validated trough: {@link #isValidTaskId(String taskID) isValidTaskId}
@@ -147,6 +150,7 @@ public class Task {
         
         if (taskIDCheck(taskId)){
             this.taskId = taskId; 
+            this.minPerTask = 0;
         }
     } 
 
@@ -171,7 +175,7 @@ public class Task {
         if (taskID.equals("") || taskID.equals(" ")){
             throw new NoTaskIdException("Missing TaskID. Please try again.");
         }
-        if (!isValidLTTaskId(taskID) || !isValidRedmineTaskId(taskID)) {
+        if (!isValidLTTaskId(taskID) && !isValidRedmineTaskId(taskID)) {
             throw new InvalidTaskIdException("Invalid TaskId. Please try again.");
         }
         return true;
@@ -192,7 +196,7 @@ public class Task {
     
     /**
      * 
-     * Sub Method of the {@link #taskIDCheck(java.lang.String) taskIDCheck}
+     * Sub Method of the {@link #taskIDCheck(java.lang.String) taskIDCheck}.
      * <br>Checks if the Task ID is in the correct Redmine format (4 digit number))
      * 
      * @param taskID : {@link String String}
@@ -205,7 +209,7 @@ public class Task {
     
     /**
      * 
-     * Converts the given parameters to {@link LocalTime LocalTime}
+     * Converts the given parameters to {@link LocalTime LocalTime}.
      * <br>Used by the constructors and the setter methods of the {@link #startTime startTime}, 
      * {@link #endTime endTime} fields
      * 
@@ -220,7 +224,7 @@ public class Task {
     
     /**
      * 
-     * Converts the given String parameter to LocalTime
+     * Converts the given String parameter to LocalTime.
      * <br>Used by the constructors and the setter methods of the {@link #startTime startTime}, 
      * {@link #endTime endTime} fields
      * 
@@ -234,9 +238,10 @@ public class Task {
     
     /**
      * 
-     * Fills the class's fields with valid values. Called by the constructor, 
-     * after careful validation of the given parameters.
+     * Fills the class's fields with valid values. 
+     * <br>Called by the constructor, after careful validation of the given parameters.
      * <br>Required to shorten the lenght of the code.
+     * <br>Uses the {@link #minPerTask() minpertask} method
      * 
      * @param taskID : {@link String String} with one of the following formats: LT-(4 digit number) || 4 digit number
      * @param comment : {@link String String} with user comments. No validation necessary
@@ -248,30 +253,29 @@ public class Task {
      */
     private void fillWithValidValues(String taskID, String comment, LocalTime startTime, LocalTime endTime) 
             throws EmptyTimeFieldException, NotExpectedTimeOrderException{
-        
-            this.taskId = taskID;
-            this.comment = comment;
-            this.startTime = startTime;
-            if (!Util.isMultipleQuarterHour(this.startTime, endTime)){                
-                this.endTime = Util.roundToMultipleQuarterHour(this.startTime, endTime);
-            }
-            else{
-                this.endTime = endTime;
-            }
+
+        this.minPerTask = 0;
+        this.taskId = taskID;
+        this.comment = comment;
+        this.startTime = startTime;
+        if (!Util.isMultipleQuarterHour(this.startTime, endTime)){                
+            this.endTime = Util.roundToMultipleQuarterHour(this.startTime, endTime);
+        }
+        else{
+            this.endTime = endTime;
+        }
+        minPerTask();
     }
     
     /**
      * 
-     * Calculates the lenght of a task in minutes
+     * Calculates the lenght of a task in minutes.
      * <br> Uses the objects {@link #startTime startTime}, {@link #endTime endTime} fields
      * If one of them is empty, it throws an exception.
      * 
-     * @return {@link Long Long} variable, the calculated lenght in minutes
-     * 
      * @throws tlog16rs.exceptions.EmptyTimeFieldException 
      */
-    @Column (name = "min_per_task")
-    public long getMinPerTask() 
+    public void minPerTask() 
             throws EmptyTimeFieldException{
         
         if (startTime == null){
@@ -281,7 +285,8 @@ public class Task {
             throw new EmptyTimeFieldException("End time missing. Please try again."); 
         }
         else{
-            return ((endTime.getHour() - startTime.getHour())*60) + 
+            minPerTask = 0;
+            minPerTask = ((endTime.getHour() - startTime.getHour())*60) + 
                     (endTime.getMinute()- startTime.getMinute());
         }
     }
@@ -334,7 +339,7 @@ public class Task {
      * {@link #startTime startTime}.
      * <br> Uses the {@link Util#isMultipleQuarterHour(java.time.LocalTime, java.time.LocalTime)
      * isMultipleQuarterHour}, {@link Util#roundToMultipleQuarterHour(java.time.LocalTime, java.time.LocalTime)
-     *  roundToMultipleQuarterHour} methods.
+     *  roundToMultipleQuarterHour} {@link #minPerTask() minPerTask} methods.
      * 
      * @param startTime : {@link LocalTime LocalTime} which contains the {@link Task task's} starting time.
      * 
@@ -351,6 +356,7 @@ public class Task {
             this.startTime = startTime;
             if (this.endTime != null && !Util.isMultipleQuarterHour(startTime, this.endTime)){
                 this.endTime = Util.roundToMultipleQuarterHour(startTime, this.endTime);
+                minPerTask();
             }
         }  
     }
@@ -400,7 +406,7 @@ public class Task {
      * <br>Checks if the {@link #startTime startTime} and the {@link #endTime endTime} is in the correct order
      * <br> Uses the {@link Util#isMultipleQuarterHour(java.time.LocalTime, java.time.LocalTime)
      * isMultipleQuarterHour}, {@link Util#roundToMultipleQuarterHour(java.time.LocalTime, java.time.LocalTime) 
-     * roundToMultipleQuarterHour} methods.
+     * roundToMultipleQuarterHour} {@link #minPerTask() minPerTask} methods.
      * 
      * @param endTime : {@link LocalTime LocalTime} which contains the {@link Task task's} end time.
      * 
@@ -420,6 +426,7 @@ public class Task {
             else {
                this.endTime = endTime; 
             }
+            minPerTask();
         }    
     }    
     
@@ -444,7 +451,7 @@ public class Task {
     
     /**
      * 
-     * Sets the user set {@link #comment comment}
+     * Sets the user set {@link #comment comment}.
      * 
      * @param comment {@link String String} which contains a comment about the task
      */

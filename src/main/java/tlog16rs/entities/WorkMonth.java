@@ -22,13 +22,15 @@ import tlog16rs.resources.serializers.WorkMonthSerializer;
 
 /**
  *
- * The {@link WorkMonth WorkMonth} class handles the collection of {@link WorkDay WorkDays}
+ * The {@link WorkMonth WorkMonth} class handles the collection of {@link WorkDay WorkDays}.
  * <br>
  * <br>{@link #days days} : {@link ArrayList ArrayList} that collects the {@link WorkDay WorkDay}s
  * <br>{@link #date date} : {@link YearMonth YearMonth} field, it contains the identity of the month (year, month)
  * <br>{@link #sumPerMonth sumPerMonth} : {@link Long Long}, the sum of the workhours in the month (in minutes)
  * <br>{@link #requiredMinPerMonth requiredMinPerMonth} : {@link Long Long},
  * the required workhours of the month (in minutes)
+ * <br>{@link #extraMinPerMonth extraMinPerMonth} : {@link Long Long}, the difference between the 
+ * {@link #sumPerMonth sumPerMonth} and {@link #requiredMinPerMonth requiredMinPerMonth} fields.
  * <br>
  * <br> The getters are generated through Lombok
  * <br> @see <a href="https://projectlombok.org/">https://projectlombok.org/</a>
@@ -53,6 +55,11 @@ public class WorkMonth {
     private long sumPerMonth;
     @Column(name = "required_min_per_month") 
     private long requiredMinPerMonth;
+    //TODO: UPDATE-kor nézzél már rá
+    @Column(name = "extra_min_per_month")
+    private long extraMinPerMonth;
+    @Transient
+    private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy.MM");
 
     /** 
      * 
@@ -65,11 +72,11 @@ public class WorkMonth {
         this.days = new ArrayList<>();
         this.sumPerMonth = 0;
         this.requiredMinPerMonth = 0;
+        this.extraMinPerMonth = 0;
         this.date = YearMonth.of(year, month);
         setMonthDate();
     }
      
-    //TODO: valahol ezt vissza kéne fejteni kiolvasáskor
     /**
      * 
      * Formats the {@link YearMonth YearMonth} {@link #date date} field into 
@@ -77,16 +84,19 @@ public class WorkMonth {
      * <br>The target field is the {@link #monthDate monhtDate}
      */
     private void setMonthDate(){
-        DateTimeFormatter format = DateTimeFormatter.ofPattern("YYYY.MM");
         this.monthDate = date.format(format);
         
+    }
+    
+    public void convertItBack(){
+        this.date = YearMonth.parse(monthDate, format);
     }
     
     /**
      *
      * Adds a {@link WorkDay WorkDay} to the {@link ArrayList list}: {@link #days days}, 
      * after validating it.
-     * <br>if sucessful calls the {@link #sumsPerMonth() sumsPerMonth}, {@link #requiredPerMonth() requiredPerMonth}
+     * <br>if sucessful calls the {@link #extraMinPerMonth() extraMinPerMonth}, {@link #requiredPerMonth() requiredPerMonth}
      * methods
      * 
      * @param wd : the {@link WorkDay WorkDay} object the method will validate, and add to the list
@@ -112,15 +122,14 @@ public class WorkMonth {
         }
         else{
             days.add(wd);
-            requiredPerMonth();
-            sumsPerMonth();
+            extraMinPerMonth();
         }      
     }
     
     /**
      * 
      * Overloads the {@link #addWorkDay(tlog16rs.entities.WorkDay, boolean) addWorkDay} method
-     * with default 'false' value 
+     * with default 'false' value .
      * <br>Uses the {@link #addWorkDay(tlog16rs.entities.WorkDay, boolean) addWorkDay} method 
      * 
      * @param wd : the {@link WorkDay WorkDay} object the method will validate, and add to the list
@@ -137,7 +146,8 @@ public class WorkMonth {
     /**
      * 
      * Decides, if this {@link WorkDay WorkDay} should be in this {@link WorkMonth WorkMonth}
-     * or it fits into an other month by date
+     * or it fits into an other month by date.
+     * 
      * @param d : {@link WorkDay WorkDay}
      * @return {@link Boolean Boolean}
      */
@@ -147,7 +157,7 @@ public class WorkMonth {
     
     /**
      * 
-     * Decides if this {@link WorkDay WorkDay} already exists in the list {@link #days days} or not
+     * Decides if this {@link WorkDay WorkDay} already exists in the list {@link #days days} or not.
      * 
      * @param d : {@link WorkDay WorkDay} object, wich the method will work with
      * 
@@ -173,7 +183,7 @@ public class WorkMonth {
      * 
      * Calculates the required workhours ({@link #requiredMinPerMonth requiredMinPerMonth} 
      * of the {@link WorkMonth WorkMonth}, from the {@link ArrayList list} of {@link WorkDay WorkDays}
-     * ({@link #days days})
+     * ({@link #days days}).
      */
     private void requiredPerMonth(){
         
@@ -186,11 +196,11 @@ public class WorkMonth {
     
     /**
      * 
-     * Calculates the sum of the workHours({@link WorkDay#sumPerDay sumPerDay}) 
+     * Calculates the sum of the workHours({@link WorkDay#sumPerDay sumPerDay}) .
      * of the {@link WorkMonth WorkMonth}, from the {@link ArrayList list} of {@link WorkDay WorkDays}
      * ({@link #days days})
      */
-    private void sumsPerMonth(){
+    private void sumPerMonth(){
         
         sumPerMonth = 0;
     
@@ -201,12 +211,13 @@ public class WorkMonth {
 
     /**
      * 
-     * Calculates, how many extra minutes did the employee work in this {@link WorkMonth WorkMonth}
-     * 
-     * @return The extra work time in minutes ({@link Long long})
+     * Calculates, how many extra minutes did the employee work in this {@link WorkMonth WorkMonth}.
+     * <br>Uses the {@link #sumPerMonth() sumperMonth) and {@link #requiredPerMonth() requiredPerMont} methods
      */
     @Column(name = "extra_min_per_month")
-    public long getExtraMinPerMonth(){        
-        return requiredMinPerMonth - sumPerMonth;
+    public void extraMinPerMonth(){ 
+        requiredPerMonth();
+        sumPerMonth();
+        this.extraMinPerMonth = requiredMinPerMonth - sumPerMonth;
     }   
 }

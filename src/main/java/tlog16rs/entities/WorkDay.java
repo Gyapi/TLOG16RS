@@ -22,10 +22,10 @@ import tlog16rs.resources.serializers.WorkDaySerializer;
 
 /**
  *
- * The {@link WorkDay WorkDay} class handles the collection of {@link Task Tasks}
+ * The {@link WorkDay WorkDay} class handles the collection of {@link Task Tasks}.
  * <br>
  * <br>{@link #tasks tasks} : An {@link java.util.ArrayList ArrayList} which stores the 
- * {@link Task Tasks}, which belongs to this {@link WorkDay WorkDay}.
+ * {@link Task Tasks}, which belongs to this {@link WorkDay WorkDay}
  * Adding new Tasks happens trough the method: {@link #addTask(tlog16rs.entities.Task) addTask}
  * <br>{@link #requiredMinPerDay requiredMinPerDay} : {@link Long long} variable, it contains 
  * the required workhours (in minutes) for the {@link WorkDay WorkDay}
@@ -33,6 +33,8 @@ import tlog16rs.resources.serializers.WorkDaySerializer;
  * of the {@link WorkDay WorkDay}. Set trough the constructor, setter method
  * <br>{@link #sumPerDay sumPerDay} : The lenght of all {@link Task Tasks} of the day. Calculated trough the
  * {@link #sumPerDay() sumPerDay} method.
+ * <br>{@link #extraMinPerDay extraMinPerDay} : the difference between the {@link #sumPerDay sumPerDay} and
+ * {@link #requiredMinPerDay requiredMinPerDay} fields
  * <br>
  * <br> The getters are generated through Lombok
  * <br> @see <a href="https://projectlombok.org/">https://projectlombok.org/</a>
@@ -59,6 +61,10 @@ public class WorkDay {
     private LocalDate actualDay;
     @Column(name = "sum_per_day")
     private long sumPerDay; 
+    //TODO: UPDATE-kor nézzél már rá
+    @Column(name = "extra_min_per_day")
+    private long extraMinPerDay;
+    
     
     /**
      * 
@@ -156,8 +162,8 @@ public class WorkDay {
      * Add a task to the list of tasks, if task time intervals have no collision.
      * <br>Uses the {@link Util Util}'s {@link Util#isSeparatedTime(Entities.Task, java.util.List) isSeparatedTime}
      * method.
-     * <br>If sucessful, calls the {@link #sumPerDay() sumPerDay} method, to refresh the
-     * values of the {@link #sumPerDay sumPerDay} field.
+     * <br>If sucessful, calls the {@link #extraMinPerDay() extraMinPerDay} method, to refresh the
+     * values of the {@link #sumPerDay sumPerDay} and {@link #extraMinPerDay extraMinPerDay} fields.
      * 
      * @param t : the {@link Task Task} object the method validates 
      * 
@@ -169,7 +175,7 @@ public class WorkDay {
         
         if (Util.isSeparatedTime(t, tasks) || tasks.isEmpty()){    
             tasks.add(t);
-            sumPerDay();
+            extraMinPerDay();
         }
         else {
             throw new NotSeparatedTimesException("The task overlaps with another. Please try again.");
@@ -179,7 +185,7 @@ public class WorkDay {
     /**
      * 
      * Calculates, the sum of the {@link #tasks tasks} {@link ArrayList list} members
-     * {@link Task#getMinPerTask() getMinPerTask}
+     * {@link Task#minPerTask() minPerTask}
      * <br>If a {@link Task Task} is started, but has no end time, the method will skip it.
      * 
      * @throws tlog16rs.exceptions.EmptyTimeFieldException
@@ -199,13 +205,15 @@ public class WorkDay {
     /**
      * 
      * Calculates the difference between the {@link #requiredMinPerDay requiredMinPerDay} and the 
-     * {@link #sumPerDay sumPerDay}
+     * {@link #sumPerDay sumPerDay}.
+     * <br> Uses the {@link #sumPerDay() sumPerDay} method
      * 
-     * @return The difference in {@link Long Long}
+     * @throws tlog16rs.exceptions.EmptyTimeFieldException
      */
-    @Column(name = "extra_min_per_day")
-    public long getExtraMinPerDay(){
-        return sumPerDay - requiredMinPerDay;
+    public void extraMinPerDay() 
+            throws EmptyTimeFieldException{
+        sumPerDay();
+        this.extraMinPerDay = sumPerDay - requiredMinPerDay;
     }
     
     /**

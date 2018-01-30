@@ -39,12 +39,7 @@ public class TaskSerializer extends StdSerializer<Task>{
         jgen.writeStringField("Start Time", task.getStartTime().toString());
         if (task.getEndTime() != null){
             jgen.writeStringField("End Time", task.getEndTime().toString());
-            try {
-                jgen.writeNumberField("MinPerTask", task.getMinPerTask());
-            } 
-            catch (EmptyTimeFieldException ex) {
-                Logger.getLogger(TaskSerializer.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            jgen.writeNumberField("MinPerTask", task.getMinPerTask());
         }
         jgen.writeEndObject();        
     }
