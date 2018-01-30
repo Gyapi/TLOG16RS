@@ -19,7 +19,10 @@ import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.extern.slf4j.Slf4j;
 import org.avaje.datasource.DataSourceConfig;
 import tlog16rs.TLOG16RSConfiguration;
+import tlog16rs.entities.Task;
 import tlog16rs.entities.TimeLogger;
+import tlog16rs.entities.WorkDay;
+import tlog16rs.entities.WorkMonth;
 
 
 /**
@@ -38,7 +41,7 @@ public class CreateDatabase {
        
         updateSchema(config);
         initDataSourceConfig(config);
-        initServerConfig (config);
+        initServerConfig(config);
         createServer();
         
     } 
@@ -47,9 +50,12 @@ public class CreateDatabase {
             throws SQLException, LiquibaseException{
         
         Connection connection = getConnection(config);        
-        Liquibase liquibase = new Liquibase("migrations.xml", new ClassLoaderResourceAccessor(),
-                new JdbcConnection(connection));        
-         liquibase.update(new Contexts());
+        Liquibase liquibase = new Liquibase(
+                "migrations.xml", 
+                new ClassLoaderResourceAccessor(),
+                new JdbcConnection(connection));  
+        
+        liquibase.update(new Contexts());
     }
     
     private Connection getConnection(TLOG16RSConfiguration config) 
@@ -57,15 +63,18 @@ public class CreateDatabase {
         return DriverManager.getConnection(config.getDbUrl(), config.getDbUser(), config.getDbPassword());
     }
     
-    private void initDataSourceConfig(TLOG16RSConfiguration config){        
+    private void initDataSourceConfig(TLOG16RSConfiguration config){ 
+        log.info("Setting up Database Connection");
         dataSourceConfig = new DataSourceConfig();
         dataSourceConfig.setDriver(config.getDbDriver());
         dataSourceConfig.setUrl(config.getDbUrl()); 
         dataSourceConfig.setUsername(config.getDbUser());
-        dataSourceConfig.setPassword(config.getDbPassword());
+        dataSourceConfig.setPassword(config.getDbPassword());        
+        log.info("Done");
     }
     
     private void initServerConfig (TLOG16RSConfiguration config){
+        log.info("Starting Ebean server");
         serverConfig = new ServerConfig();
         serverConfig.setName(config.getDbName());
         serverConfig.setDdlGenerate(false);
@@ -73,12 +82,20 @@ public class CreateDatabase {
         serverConfig.setRegister(true);
         serverConfig.setDataSourceConfig(dataSourceConfig);
         serverConfig.addClass(TimeLogger.class);
+        serverConfig.addClass(WorkMonth.class);
+        serverConfig.addClass(WorkDay.class);
+        serverConfig.addClass(Task.class);
         serverConfig.setDefaultServer(true);
     }
     
     private void createServer(){
         ebeanServer = EbeanServerFactory.create(serverConfig);
+        log.info("Ebean server up and running.");
     }
+
+    public EbeanServer getEbeanServer() {
+        return ebeanServer;
+    }   
     
     public boolean ping(){
         //TODO: Hibernate get metod database halthcheckelni

@@ -57,7 +57,7 @@ classes.doLast {
         main = 'com.avaje.ebean.enhance.ant.MainTransform'
         args = [
 			compileJava.destinationDir,
-                'tlog16rs.core.entities',
+                'tlog16rs.entities',
                 'debug=1'
         ]
     }

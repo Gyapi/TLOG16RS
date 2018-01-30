@@ -34,7 +34,7 @@ import tlog16rs.resources.serializers.WorkDaySerializer;
  * <br>{@link #sumPerDay sumPerDay} : The lenght of all {@link Task Tasks} of the day. Calculated trough the
  * {@link #sumPerDay() sumPerDay} method.
  * <br>
- * <br> The getters and setters, which does not require special code, are generated through Lombok
+ * <br> The getters are generated through Lombok
  * <br> @see <a href="https://projectlombok.org/">https://projectlombok.org/</a>
  * <br> Serialized trough the {@link WorkDaySerializer WorkDaySerializer} class
  * @author Gyapi

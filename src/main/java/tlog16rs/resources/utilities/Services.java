@@ -271,9 +271,11 @@ public class Services {
      * @throws NumberFormatException
      * @throws JsonProcessingException
      * @throws FutureWorkException 
+     * @throws tlog16rs.exceptions.NegativeMinutesOfWorkException 
      */
     public String getSelectedDay(String wantedYear, String wantedMonth, String wantedDay)
-        throws NumberFormatException, JsonProcessingException, FutureWorkException{
+        throws NumberFormatException, JsonProcessingException, FutureWorkException,
+            NegativeMinutesOfWorkException{
         
         String returnMe = "No such day exists";
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -353,12 +355,13 @@ public class Services {
      * @throws EmptyTimeFieldException
      * @throws NotExpectedTimeOrderException
      * @throws NotSeparatedTimesException 
+     * @throws tlog16rs.exceptions.NegativeMinutesOfWorkException 
      */
     public Task starTask(TaskRB task) 
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException, 
             NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException,
             NoTaskIdException, EmptyTimeFieldException, NotExpectedTimeOrderException,
-            NotSeparatedTimesException{
+            NotSeparatedTimesException, NegativeMinutesOfWorkException{
         
         WorkMonth month = new WorkMonth(task.getYear(), task.getMonth()); 
         if (timelogger.isNewMonth(month)){
@@ -402,11 +405,12 @@ public class Services {
      * @throws EmptyTimeFieldException
      * @throws NoTaskIdException
      * @throws NotSeparatedTimesException 
+     * @throws tlog16rs.exceptions.NegativeMinutesOfWorkException 
      */
     public Task finishThatThask(FinishTaskRB task) 
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException,
             NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException,
-            NotExpectedTimeOrderException, EmptyTimeFieldException, NoTaskIdException, NotSeparatedTimesException {        
+            NotExpectedTimeOrderException, EmptyTimeFieldException, NoTaskIdException, NotSeparatedTimesException, NegativeMinutesOfWorkException {        
         
         WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
         
@@ -464,12 +468,13 @@ public class Services {
      * @throws EmptyTimeFieldException
      * @throws NoTaskIdException
      * @throws NotSeparatedTimesException 
+     * @throws tlog16rs.exceptions.NegativeMinutesOfWorkException 
      */
     public Task modifyTask(ModifyTaskRB task) 
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException, 
             NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException, 
             NotExpectedTimeOrderException, EmptyTimeFieldException, NoTaskIdException,
-            NotSeparatedTimesException {
+            NotSeparatedTimesException, NegativeMinutesOfWorkException {
         
         WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
         
@@ -520,10 +525,11 @@ public class Services {
      * @throws NoTaskIdException
      * @throws EmptyTimeFieldException
      * @throws NotExpectedTimeOrderException 
+     * @throws tlog16rs.exceptions.NegativeMinutesOfWorkException 
      */
     public boolean deleteThisTask(DeleteTaskRB task) 
             throws FutureWorkException, InvalidTaskIdException, NoTaskIdException, 
-            EmptyTimeFieldException, NotExpectedTimeOrderException{
+            EmptyTimeFieldException, NotExpectedTimeOrderException, NegativeMinutesOfWorkException{
         
         WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
         
@@ -666,10 +672,11 @@ public class Services {
      * @throws NotExpectedTimeOrderException 
      */
     private Task modifyThisTask(Task selected, ModifyTaskRB modifier)
-            throws EmptyTimeFieldException, NotExpectedTimeOrderException{
+            throws EmptyTimeFieldException, NotExpectedTimeOrderException,
+            InvalidTaskIdException, NoTaskIdException{
         
         if (modifier.getNewTaskId()!= null){
-            selected.setTaskId(modifier.getNewTaskId());
+            selected.setTaskId(modifier.getNewTaskId());            
         }
         if (modifier.getNewComment() != null){
             selected.setComment(modifier.getNewComment());

@@ -26,14 +26,13 @@ import tlog16rs.resources.serializers.TaskSerializer;
  * <br>{@link #comment comment} : A {@link String String} variable, wich contains a
  * user set comment to the {@link Task Task}
  * <br>
- * <br> The getters and setters, which does not require special code, are generated through Lombok
+ * <br> The getters are generated through Lombok
  * <br> @see <a href="https://projectlombok.org/">https://projectlombok.org/</a>
  * <br> Serialized trough the {@link TaskSerializer TaskSerializer} class
  * @author Gyapi 
  */
 @Entity
 @lombok.Getter
-@lombok.Setter
 @JsonSerialize(using = TaskSerializer.class)
 public class Task {
     
@@ -97,7 +96,7 @@ public class Task {
      * {@link #timeConvert(int, int) timeConvert}, {@link #taskIDCheck(java.lang.String) taskIDCheck} methods.
      * 
      * @param taskId : {@link String String} with one of the following formats: LT-(4 digit number) || 4 digit number
-     * Validated trhugh: {@link #isValidTaskId(String taskID) isValidTaskId}
+     * Validated trough: {@link #isValidTaskId(String taskID) isValidTaskId}
      * @param comment : {@link String String} with user comments. No validation necessary
      * @param startTime : {@link String String} wich defines the starting time of the task. Has to be in the following format: 
      * HH:mm
@@ -138,7 +137,7 @@ public class Task {
      * <br>Uses the {@link #taskIDCheck(java.lang.String) method.
      * 
      * @param taskId : {@link String String} with one of the following formats: LT-(4 digit number) || 4 digit number
-     * Validated trhough: {@link #isValidTaskId(String taskID) isValidTaskId}
+     * Validated trough: {@link #isValidTaskId(String taskID) isValidTaskId}
      * 
      * @throws tlog16rs.exceptions.InvalidTaskIdException 
      * @throws tlog16rs.exceptions.NoTaskIdException 
@@ -422,6 +421,34 @@ public class Task {
                this.endTime = endTime; 
             }
         }    
+    }    
+    
+    /**
+     * 
+     * Sets the {@link Task Task} object's {@link #taskId taksId} field's value, after validation.
+     * <br>Uses the {@link #taskIDCheck(java.lang.String) method.
+     * 
+     * @param taskID : {@link String String} with one of the following formats: LT-(4 digit number) || 4 digit number
+     * Validated trough: {@link #isValidTaskId(String taskID) isValidTaskId}
+     * 
+     * @throws tlog16rs.exceptions.InvalidTaskIdException
+     * @throws tlog16rs.exceptions.NoTaskIdException 
+     */
+    public void setTaskId(String taskID) 
+            throws InvalidTaskIdException, NoTaskIdException{
+        
+        if (taskIDCheck(taskID)){             
+            this.taskId = taskID; 
+        }
     }
     
+    /**
+     * 
+     * Sets the user set {@link #comment comment}
+     * 
+     * @param comment {@link String String} which contains a comment about the task
+     */
+    public void setComment (String comment){
+        this.comment = comment;
+    }
 }

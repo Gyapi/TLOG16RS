@@ -13,8 +13,8 @@ import javax.persistence.OneToMany;
 
 /**
  *
- * The "main" class of the application. It collects and handles all functions regarding to the 
- * {@link WorkMonth WorkMonth} classes
+ * The "main" class of the application. 
+ * It handles the collection of {@link WorkMonth WorkMonth} classes
  * <br>
  * <br> The getters and setters, which does not require special code, are generated through Lombok
  * <br> @see <a href="https://projectlombok.org/">https://projectlombok.org/</a>
@@ -25,19 +25,19 @@ import javax.persistence.OneToMany;
 @lombok.Setter
 public class TimeLogger {
     
-    //Fields
     @Id    
     @GeneratedValue
     private int id;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private final List<WorkMonth> months = new ArrayList<>();
     
-    //Methods
     /**
      * 
      * Adds a new {@link WorkMonth WorkMonth} to the list {@link #months months}
-     * after checking, trough a {@link #isNewMonth(Entities.WorkMonth) submethod} if it already exsits
-     * @param m : {@link WorkMonth WorkMonth}
+     * after checking, trough the  {@link #isNewMonth(Entities.WorkMonth) isNewMonth} method if it already exsits.
+     * 
+     * @param m : {@link WorkMonth WorkMonth} object we want to add
+     * 
      * @throws tlog16rs.exceptions.NotNewMonthException 
      */
     public void addMonth(WorkMonth m) 
@@ -52,9 +52,11 @@ public class TimeLogger {
 
     /**
      * 
-     * Decides, if the given {@link WorkMonth WorkMonth} already exists in the list {@link #months months} or not
-     * @param m : {@link WorkMonth WorkMonth}
-     * @return {@link Boolean Boolean}
+     * Decides, if the given {@link WorkMonth WorkMonth} already exists in the list {@link #months months} or not.
+     * 
+     * @param m : {@link WorkMonth WorkMonth} object we inspect
+     * 
+     * @return true if it is a new {@link WorkMonth month} in the list
      */
     public boolean isNewMonth(WorkMonth  m){
         

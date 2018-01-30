@@ -3,6 +3,11 @@ package tlog16rs;
 import io.dropwizard.Configuration;
 import org.hibernate.validator.constraints.NotEmpty;
 
+/**
+ * 
+ * Basic applicaiton configuration
+ * @author Gyapi
+ */
 @lombok.Getter
 @lombok.Setter
 public class TLOG16RSConfiguration extends Configuration {

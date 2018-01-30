@@ -4,6 +4,8 @@ import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
@@ -123,7 +125,8 @@ public class TLOG16RSResource {
         try {        
             return services.getSelectedDay(year, month, day);     
         } 
-        catch (NumberFormatException | JsonProcessingException| FutureWorkException | DateTimeException ex) {
+        catch (NumberFormatException | JsonProcessingException| FutureWorkException | DateTimeException |
+               NegativeMinutesOfWorkException ex) {
             log.error( "{} : @GET, getSelectedDay : {}.{}.{} : {}",LocalDate.now(), year, month, day, ex.toString());
             return LocalDate.now() + "\n@GET getSelectedDay : " + year + "." + month + "." + day + 
                     "\n" + ex.toString();
@@ -177,7 +180,7 @@ public class TLOG16RSResource {
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
                 NotNewDateException | WeekendNotEnabledException | InvalidTaskIdException |
                 NoTaskIdException | EmptyTimeFieldException | NotExpectedTimeOrderException |
-                NotSeparatedTimesException ex) {
+                NotSeparatedTimesException | NegativeMinutesOfWorkException ex) {
             log.error("{} : @POST, startTask : {} - {}.{}.{} - {} '{}' {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     task.getComment(), ex.toString());
@@ -201,7 +204,7 @@ public class TLOG16RSResource {
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
                 NotNewDateException | WeekendNotEnabledException | InvalidTaskIdException | 
                 NotExpectedTimeOrderException | EmptyTimeFieldException | NoTaskIdException | 
-                NotSeparatedTimesException ex) {
+                NotSeparatedTimesException | NegativeMinutesOfWorkException ex) {
             log.error("{} : @PUT, startTask : {} - {}.{}.{} - {} - {} : {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     task.getEndTime(), ex.toString());
@@ -225,7 +228,7 @@ public class TLOG16RSResource {
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
                 NotNewDateException | WeekendNotEnabledException | InvalidTaskIdException | 
                 NotExpectedTimeOrderException | EmptyTimeFieldException | NoTaskIdException | 
-                NotSeparatedTimesException ex) {
+                NotSeparatedTimesException | NegativeMinutesOfWorkException ex) {
             log.error("{} : @PUT, modifyTask : {} - {}.{}.{} - {} : {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     ex.toString());
@@ -248,7 +251,7 @@ public class TLOG16RSResource {
                 return "No such Task";
             }
         } catch (FutureWorkException | InvalidTaskIdException | NoTaskIdException | 
-                EmptyTimeFieldException |  NotExpectedTimeOrderException ex) {
+                EmptyTimeFieldException |  NotExpectedTimeOrderException | NegativeMinutesOfWorkException ex) {
             log.error("{} : @PUT, removeTask : {} - {}.{}.{} - {} : {}", LocalDate.now(), task.getTaskId(),
                     task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), ex.toString());
             return "Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" +  "@PUT, removeTask : " + 

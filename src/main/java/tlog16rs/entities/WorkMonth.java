@@ -30,7 +30,7 @@ import tlog16rs.resources.serializers.WorkMonthSerializer;
  * <br>{@link #requiredMinPerMonth requiredMinPerMonth} : {@link Long Long},
  * the required workhours of the month (in minutes)
  * <br>
- * <br> The getters and setters, which does not require special code, are generated through Lombok
+ * <br> The getters are generated through Lombok
  * <br> @see <a href="https://projectlombok.org/">https://projectlombok.org/</a>
  * <br> Serialized trough the {@link WorkMonthSerializer WorkMonthSerializer} class
  * @author Gyapi
