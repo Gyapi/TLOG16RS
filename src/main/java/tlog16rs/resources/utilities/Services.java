@@ -45,7 +45,7 @@ public class Services {
     private TimeLogger timelogger;
 
     public Services() {
-        timelogger = Ebean.find(TimeLogger.class, 1);
+        timelogger = Ebean.find(TimeLogger.class, 2);
         //createContent();
         timelogger.getMonths().forEach((month) -> {
             month.convertItBack();

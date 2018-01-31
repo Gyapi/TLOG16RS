@@ -24,16 +24,26 @@ public class TLOG16RSHealthCheck extends HealthCheck{
         this.database = database;
     }
 
-    //TODO: Legyenmánittvalami
+    //TODO: Még nem igazán működik
     @Override
     protected Result check() throws Exception {
         InetAddress inet = InetAddress.getByName("127.0.0.1");
         log.info("Sending Ping Request to 127.0.0.1");
-        if (!inet.isReachable(8080)){
-            log.info("127.0.0.1 unreachable");
-            return Result.unhealthy("");
+        try{
+            inet.isReachable(8080);
+            log.info("127.0.0.1:8080 reached.");  
         }
-        log.info("127.0.0.1 reached.");        
+        catch (Exception ex){
+            return Result.unhealthy("ERROR: 127.0.0.1 Unreachable\n" + ex.toString());            
+        }
+        log.info("Testing Database Connection");
+        try{
+            database.ping();
+            log.info("Database is up and running");
+        }
+        catch (Exception ex){
+            return Result.unhealthy("ERROR: Database Unreachable!\n" + ex.toString());
+        }
         return Result.healthy();
     }    
 }

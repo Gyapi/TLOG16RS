@@ -97,8 +97,8 @@ public class CreateDatabase {
         return ebeanServer;
     }   
     
-    public boolean ping(){
-        //TODO: Hibernate get metod database halthcheckelni
+    public boolean ping() throws Exception{
+        ebeanServer.createSqlQuery("SELECT 1");
         return true;
     }
 }
