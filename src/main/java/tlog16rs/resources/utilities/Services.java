@@ -42,7 +42,7 @@ import tlog16rs.exceptions.WeekendNotEnabledException;
 @Slf4j
 public class Services {
     
-    private final TimeLogger timelogger;
+    private TimeLogger timelogger;
 
     public Services() {
         timelogger = Ebean.find(TimeLogger.class, 1);
@@ -60,6 +60,8 @@ public class Services {
                 testTask12, testTask13;
         WorkMonth testMonth1, testMonth2;
         WorkDay testDay1, testDay2, testDay3, testDay4, testDay5;
+        
+        timelogger = new TimeLogger("Gyapi");
         
         try {
             testMonth1 = new WorkMonth(2017, 10);

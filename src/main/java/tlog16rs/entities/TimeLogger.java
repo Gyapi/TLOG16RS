@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -30,6 +31,12 @@ public class TimeLogger {
     private int id;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private final List<WorkMonth> months = new ArrayList<>();
+    @Column (name = "name")
+    private String name;
+
+    public TimeLogger(String name) {
+        this.name = name;
+    }
     
     /**
      * 
