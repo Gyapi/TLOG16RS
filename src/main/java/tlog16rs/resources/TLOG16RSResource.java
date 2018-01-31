@@ -40,8 +40,11 @@ import tlog16rs.resources.RBobjects.WorkMonthRB;
 
 /**
  * 
- * Containt the endpoints od the application
- * <br> Responsible for logging the errors
+ * Contains the endpoints of the application.
+ * <br>Responsible for logging the errors
+ * <br> The error logging happens trough Lombok's @Slf4j
+ * <br> @see <a href="https://projectlombok.org/">https://projectlombok.org/</a>
+ * 
  * @author Gyapi
  */
 @Path("/timelogger")
@@ -88,6 +91,7 @@ public class TLOG16RSResource {
         
         try {
             services.getTimelogger().addMonth(workMonth);
+            Ebean.save(services.getTimelogger());
             return Response.ok(workMonth).build();
         } 
         catch (NotNewMonthException  | DateTimeException ex) {
@@ -141,6 +145,7 @@ public class TLOG16RSResource {
         
         try {
             WorkDay workDay =  services.createDay(day);
+            Ebean.save(services.getTimelogger());
             return Response.ok(workDay).build();
         } 
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException | 
@@ -175,6 +180,7 @@ public class TLOG16RSResource {
         
         try {
            Task startedTask = services.starTask(task);
+           Ebean.save(services.getTimelogger());
            return Response.ok(startedTask).build();
         } 
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
@@ -199,6 +205,7 @@ public class TLOG16RSResource {
         
         try {        
             Task finishedTask = services.finishThatThask(task);
+            Ebean.update(services.getTimelogger());
             return Response.ok(finishedTask).build();
         } 
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
@@ -222,7 +229,8 @@ public class TLOG16RSResource {
     public Response modifyTask(ModifyTaskRB task){
         
         try {            
-            Task modifiedTask = services.modifyTask(task);    
+            Task modifiedTask = services.modifyTask(task); 
+            Ebean.update(services.getTimelogger());   
             return Response.ok(modifiedTask).build();
         } 
         catch (NotNewMonthException | FutureWorkException | NotTheSameMonthException |
@@ -245,6 +253,7 @@ public class TLOG16RSResource {
         
         try {            
             if(services.deleteThisTask(task)){
+                Ebean.update(services.getTimelogger());
                 return "Task deleted";
             }   
             else{

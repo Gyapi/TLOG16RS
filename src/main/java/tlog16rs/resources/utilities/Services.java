@@ -46,16 +46,87 @@ public class Services {
 
     public Services() {
         timelogger = Ebean.find(TimeLogger.class, 1);
+        //createContent();
         timelogger.getMonths().forEach((month) -> {
             month.convertItBack();
         });
+    }
+    
+    private void createContent(){
+        //-----------------Test code-----------------
+        //TODO : DELETE after obsolete
+        Task testTask1, testTask2, testTask3, testTask4, testTask5, 
+                testTask6, testTask7, testTask8, testTask9, testTask10, testTask11,
+                testTask12, testTask13;
+        WorkMonth testMonth1, testMonth2;
+        WorkDay testDay1, testDay2, testDay3, testDay4, testDay5;
+        
+        try {
+            testMonth1 = new WorkMonth(2017, 10);
+            testTask1 = new Task("LT-0001", "Exception Test", "07:30", "07:45");
+            testTask2 = new Task("LT-0002", "Exception Test", "08:30", "08:45");
+            testDay1 = new WorkDay(120, 2017, 10, 10);
+            testDay1.addTask(testTask1);
+            testDay1.addTask(testTask2);
+            testMonth1.addWorkDay(testDay1);
+            testTask3 = new Task("LT-0003", "Exception Test", "07:30", "07:45");
+            testTask4 = new Task("LT-0004", "Exception Test", "08:30", "08:45");
+            testDay2 = new WorkDay(2017, 10, 11);
+            testDay2.addTask(testTask3);
+            testDay2.addTask(testTask4);
+            testMonth1.addWorkDay(testDay2);   
+
+            timelogger.addMonth(testMonth1);
+            
+            testMonth2 = new WorkMonth(2017, 9);
+            testTask5 = new Task("LT-0005", "Exception Test", "07:30", "07:45");
+            testTask6 = new Task("LT-0006", "Exception Test", "08:30", "08:45");
+            testDay3 = new WorkDay(120, 2017, 9, 8);
+            testDay3.addTask(testTask5);
+            testDay3.addTask(testTask6);
+            testMonth2.addWorkDay(testDay3);
+
+            testTask7 = new Task("LT-0007", "Exception Test", "07:30", "07:45");
+            testTask8 = new Task("LT-0008", "Exception Test", "08:30", "08:45");
+            testDay4 = new WorkDay(2017, 9, 11);
+            testDay4.addTask(testTask7);
+            testDay4.addTask(testTask8);
+            testMonth2.addWorkDay(testDay4);
+
+            testTask9 = new Task("LT-0009", "Exception Test", "07:30", "07:45");
+            testTask10 = new Task("LT-0010", "Exception Test", "08:30", "08:45");
+            testTask11 = new Task("LT-0011");
+            testTask11.setStartTime("08:45");
+            testTask11.setComment("Unfinished Test");  
+            testTask12 = new Task("LT-0012", "Exception Test", "10:30", "10:45"); 
+            testTask13 = new Task("LT-0013");
+            testTask13.setStartTime("07:15");
+            testTask13.setComment("Unfinished Test"); 
+            testDay5 = new WorkDay(2017, 9, 12);
+            testDay5.addTask(testTask9);
+            testDay5.addTask(testTask10);
+            testDay5.addTask(testTask11);
+            testDay5.addTask(testTask12);
+            testDay5.addTask(testTask13);
+            testMonth2.addWorkDay(testDay5);
+
+            timelogger.addMonth(testMonth2);
+            Ebean.save(timelogger);
+        } 
+        catch (EmptyTimeFieldException | FutureWorkException | InvalidTaskIdException |
+                NegativeMinutesOfWorkException | NoTaskIdException | NotExpectedTimeOrderException | 
+                NotNewDateException | NotNewMonthException | NotSeparatedTimesException | 
+                NotTheSameMonthException | WeekendNotEnabledException exception) {
+            System.out.println(exception);
+        }
+        //---------------------------------------------
     }
     
     
     /**
      * 
      * Returns all the {@link WorkMonth WorkMonths} from the designated {@link TimeLogger TimeLogger} object 
-     * as a serialized {@link String String}
+     * as a serialized {@link String String}.
      * Uses the {@link tlog16rs.core.Serializers.WorkMonthSerializer WorkMonthSerializer} class
      * @return String
      * @throws com.fasterxml.jackson.core.JsonProcessingException
@@ -79,7 +150,7 @@ public class Services {
     
     /**
      * 
-     * Gives back the selected {@link WorkMonth WorkMonth} as a serialized {@link String String}
+     * Gives back the selected {@link WorkMonth WorkMonth} as a serialized {@link String String}.
      * Uses the {@link WorkMonthSerializer WorkMonthSerializer} class
      * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector} method
      * @param wantedYear
@@ -111,6 +182,7 @@ public class Services {
      */
     public String deleteAllMonths(){
                 
+        Ebean.deleteAll(timelogger.getMonths());
         if (!timelogger.getMonths().isEmpty()){
             timelogger.getMonths().forEach((month) -> {
                 month = null;
@@ -132,7 +204,7 @@ public class Services {
     public String getDays() 
             throws JsonProcessingException {
 
-        String returnMe = "Nothing is here";
+        String returnMe = "";
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
         if (timelogger.getMonths().isEmpty()){
@@ -141,17 +213,63 @@ public class Services {
         else{
             for (WorkMonth month : timelogger.getMonths()){
                 if (!month.getDays().isEmpty()){
-                    returnMe = "";
                     for (WorkDay day : month.getDays()){      
                         returnMe += objectMapper.writeValueAsString(day) + "\n\n";    
                     }
                     returnMe += "\n";
                 }
-            }  
+            }
+            if (returnMe.equals("")){
+                returnMe = "Nothing is here";
+            }
             return returnMe; 
         } 
     }
-          
+         
+    
+        /**
+     * 
+     * Returns the selected {@link WorkDay WorkDay} as a serialized {@link String String}
+     * Uses {@link WorkDaySerializer WorkDaySerializer} as serializer
+     * @param wantedYear
+     * @param wantedMonth
+     * @param wantedDay
+     * @return String
+     * @throws NumberFormatException
+     * @throws JsonProcessingException
+     * @throws FutureWorkException 
+     * @throws tlog16rs.exceptions.NegativeMinutesOfWorkException 
+     */
+    public String getSelectedDay(String wantedYear, String wantedMonth, String wantedDay)
+        throws NumberFormatException, JsonProcessingException, FutureWorkException,
+            NegativeMinutesOfWorkException{
+        
+        String returnMe = "No such day exists";
+        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+        
+        WorkMonth selectedMonth = new WorkMonth(Integer.parseInt(wantedYear),
+                Integer.parseInt(wantedMonth));
+        if (!timelogger.isNewMonth(selectedMonth)){
+            selectedMonth = monthSelector(selectedMonth);
+        }
+        else{
+            return returnMe;
+        }
+        
+        WorkDay selectedDay = new WorkDay(Integer.parseInt(wantedYear), Integer.parseInt(wantedMonth),
+                Integer.parseInt(wantedDay));
+        if(selectedMonth.isNewDate(selectedDay)){
+            return returnMe;
+        }
+        for (WorkDay day : selectedMonth.getDays()){
+            if (day.getActualDay().equals(selectedDay.getActualDay())){
+                return objectMapper.writeValueAsString(day);                
+            }
+        }
+        
+        return returnMe;
+    }
+    
     /**
      * 
      * Created a new {@link WorkDay WorkDay} object from the given {@link WorkDayRB workDayRB} object
@@ -193,49 +311,6 @@ public class Services {
         }
         
         return newDay;
-    }
-    
-    /**
-     * 
-     * Returns the selected {@link WorkDay WorkDay} as a serialized {@link String String}
-     * Uses {@link WorkDaySerializer WorkDaySerializer} as serializer
-     * @param wantedYear
-     * @param wantedMonth
-     * @param wantedDay
-     * @return String
-     * @throws NumberFormatException
-     * @throws JsonProcessingException
-     * @throws FutureWorkException 
-     * @throws tlog16rs.exceptions.NegativeMinutesOfWorkException 
-     */
-    public String getSelectedDay(String wantedYear, String wantedMonth, String wantedDay)
-        throws NumberFormatException, JsonProcessingException, FutureWorkException,
-            NegativeMinutesOfWorkException{
-        
-        String returnMe = "No such day exists";
-        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
-        
-        WorkMonth selectedMonth = new WorkMonth(Integer.parseInt(wantedYear),
-                Integer.parseInt(wantedMonth));
-        if (!timelogger.isNewMonth(selectedMonth)){
-            selectedMonth = monthSelector(selectedMonth);
-        }
-        else{
-            return returnMe;
-        }
-        
-        WorkDay selectedDay = new WorkDay(Integer.parseInt(wantedYear), Integer.parseInt(wantedMonth),
-                Integer.parseInt(wantedDay));
-        if(selectedMonth.isNewDate(selectedDay)){
-            return returnMe;
-        }
-        for (WorkDay day : selectedMonth.getDays()){
-            if (day.getActualDay().equals(selectedDay.getActualDay())){
-                return objectMapper.writeValueAsString(day);                
-            }
-        }
-        
-        return returnMe;
     }
     
     /**
@@ -381,6 +456,8 @@ public class Services {
             }
         }     
         
+        day.extraMinPerDay();
+        month.extraMinPerMonth();
         return modifyThisTask;
     }    
 
@@ -443,6 +520,8 @@ public class Services {
            modified = modifyThisTask(modified, task); 
         }
         
+        day.extraMinPerDay();
+        month.extraMinPerMonth();
         return modified;        
     }
     
@@ -491,7 +570,10 @@ public class Services {
             return false;
         }
         else{
+            Ebean.delete(deleteThis);
             day.getTasks().remove(deleteThis);
+            day.extraMinPerDay();
+            month.extraMinPerMonth();
             deleteThis = null;
             return true;
             }      

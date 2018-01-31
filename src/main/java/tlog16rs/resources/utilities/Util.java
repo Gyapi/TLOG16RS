@@ -105,7 +105,6 @@ public class Util {
                 if (task.getEndTime() == null){
                     dif = t.getStartTime().until(task.getStartTime(), MINUTES);
                    if (dif > -15 && dif < 15){
-                       System.out.println("anyád");
                         collected.add(task);                       
                    }
                 }          
