@@ -22,15 +22,16 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
 
     @Override
     public void initialize(final Bootstrap<TLOG16RSConfiguration> bootstrap) {
-        // TODO: application initialization
     }
 
     @Override
     public void run(final TLOG16RSConfiguration configuration,
                     final Environment environment) throws SQLException, LiquibaseException {
-        
+        //Database connection - Ebean server
         final CreateDatabase database = new CreateDatabase(configuration); 
-        environment.healthChecks().register("HealthCheck", new TLOG16RSHealthCheck(database));       
+        //HealthCheck
+        environment.healthChecks().register("HealthCheck", new TLOG16RSHealthCheck(database));
+        //Endpoints
         environment.jersey().register(new TLOG16RSResource());              
     }
 }

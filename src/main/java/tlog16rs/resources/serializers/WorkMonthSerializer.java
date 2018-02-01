@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tlog16rs.resources.serializers;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -14,7 +9,9 @@ import java.io.IOException;
 import tlog16rs.entities.WorkMonth;
 
 /**
- *
+ * Maps the {@link WorkMonth WorkMonth} class.
+ * <br> Made by using Jackson API.
+ * 
  * @author Gyapi
  */
 public class WorkMonthSerializer extends StdSerializer<WorkMonth>{

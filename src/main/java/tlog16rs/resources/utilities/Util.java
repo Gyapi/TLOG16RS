@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tlog16rs.resources.utilities;
 
 import tlog16rs.entities.Task;
@@ -21,15 +16,19 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <br>{@link #isMultipleQuarterHour(java.time.LocalTime, java.time.LocalTime) isMultipleQuarterHour}
  * <br>{@link #isSeparatedTime(Entities.Task, java.util.List) isSeparatedTime}
  * <br>{@link #isWeekday(java.time.LocalDate) isWeekday}
+ * 
  * @author Gyapi
  */
 public class Util {
     
     /**
-     * Checks if the time interval's length is multiple of the quarter hour
+     * Checks if the time interval's length is multiple of the quarter hour.
+     * 
      * @param startTime : {@link LocalTime LocalTime} startTime of the time interval
      * @param endTime : {@link LocalTime LocalTime} endTime of the time interval
-     * @return : {@link Boolean Boolean} 
+     * 
+     * @return : true if it is multiple of quarter hour 
+     * 
      * @throws tlog16rs.exceptions.EmptyTimeFieldException 
      * @throws tlog16rs.exceptions.NotExpectedTimeOrderException 
      */
@@ -56,9 +55,11 @@ public class Util {
     
    /**
     * 
-    * Rounds the given time interval to multiple of a quarter hour
+    * Rounds the given time interval to multiple of a quarter hour.
+    * 
     * @param startTime : {@link LocalTime LocalTime} startTime of the time interval
     * @param endTime : {@link LocalTime LocalTime} endTime of the time interval
+    * 
     * @return : {@link LocalTime LocalTime} rounded endTime 
     */
     public static LocalTime roundToMultipleQuarterHour(LocalTime startTime, LocalTime endTime){
@@ -79,8 +80,10 @@ public class Util {
   
     /**
      * Decides if actual day is a weekday
-     * @param actualDay
-     * @return 
+     * 
+     * @param actualDay : {@link localDate LocalDate} the day we want to inspect
+     * 
+     * @return true if it is a weekday
      */
     public static boolean isWeekday(LocalDate actualDay){
         return ((!actualDay.getDayOfWeek().equals(DayOfWeek.SUNDAY)) && 
@@ -90,10 +93,12 @@ public class Util {
     
     /**
      * Decides if the given {@link Task Task} has a common time interval
-     * with any existing {@link Task Task}'s time interval in the given list
+     * with any existing {@link Task Task}'s time interval in the given list.
+     * 
      * @param t : {@link Task Task} the task we validate
      * @param tasks : {@link ArrayList ArrayList} of {@link Task Task}s
-     * @return : {@link Boolean Boolean}
+     * 
+     * @return : if it has no common time intervals with other tasks
      */
     public static boolean isSeparatedTime(Task t, List<Task> tasks){
         

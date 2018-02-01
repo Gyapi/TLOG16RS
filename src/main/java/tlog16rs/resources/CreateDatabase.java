@@ -1,16 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tlog16rs.resources;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
+import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.config.ServerConfig;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.jvm.JdbcConnection;
@@ -27,6 +24,10 @@ import tlog16rs.entities.WorkMonth;
 
 /**
  *
+ * This class is responsible for creating, and managing the database connection.
+ * <br> Uses Lombok's @SLf4j annotation for log message handling.
+ * <br> @see <a href="https://projectlombok.org/">https://projectlombok.org/</a>
+ * 
  * @author Gyapi
  */
 @Slf4j
@@ -36,16 +37,32 @@ public class CreateDatabase {
     private ServerConfig serverConfig;
     private EbeanServer ebeanServer;
 
+    /**
+     * 
+     * @param config : the {@link TLOG16RSConfiguration TLOG16RSConfiguration} object
+     * 
+     * @throws SQLException
+     * @throws LiquibaseException 
+     */
     public CreateDatabase(TLOG16RSConfiguration config) 
-            throws SQLException, LiquibaseException {
-       
+            throws SQLException, LiquibaseException {  
+        
         updateSchema(config);
         initDataSourceConfig(config);
         initServerConfig(config);
-        createServer();
-        
+        createServer();        
     } 
     
+    /**
+     * 
+     * Responsible for updating the database's schematic trough liquibase.
+     * Only updates if there are changes in migrations.xml
+     * 
+     * @param config : the {@link TLOG16RSConfiguration TLOG16RSConfiguration} object
+     * 
+     * @throws SQLException
+     * @throws LiquibaseException 
+     */
     private void updateSchema(TLOG16RSConfiguration config)
             throws SQLException, LiquibaseException{
         
@@ -58,11 +75,26 @@ public class CreateDatabase {
         liquibase.update(new Contexts());
     }
     
+    /**
+     * 
+     * Creates the database connection.
+     * 
+     * @param config : the {@link TLOG16RSConfiguration TLOG16RSConfiguration} object
+     * 
+     * @return
+     * @throws SQLException 
+     */
     private Connection getConnection(TLOG16RSConfiguration config) 
             throws SQLException{
         return DriverManager.getConnection(config.getDbUrl(), config.getDbUser(), config.getDbPassword());
     }
     
+    /**
+     * 
+     * Sets up the database connection.
+     * 
+     * @param config : the {@link TLOG16RSConfiguration TLOG16RSConfiguration} object 
+     */
     private void initDataSourceConfig(TLOG16RSConfiguration config){ 
         log.info("Setting up Database Connection");
         dataSourceConfig = new DataSourceConfig();
@@ -71,8 +103,14 @@ public class CreateDatabase {
         dataSourceConfig.setUsername(config.getDbUser());
         dataSourceConfig.setPassword(config.getDbPassword());        
         log.info("Done");
-    }
+    }   
     
+    /**
+     * 
+     * Configures the Ebean server.
+     * 
+     * @param config : the {@link TLOG16RSConfiguration TLOG16RSConfiguration} object 
+     */
     private void initServerConfig (TLOG16RSConfiguration config){
         log.info("Starting Ebean server");
         serverConfig = new ServerConfig();
@@ -88,6 +126,10 @@ public class CreateDatabase {
         serverConfig.setDefaultServer(true);
     }
     
+    /**
+     * 
+     * Starts the Ebean server
+     */
     private void createServer(){
         ebeanServer = EbeanServerFactory.create(serverConfig);
         log.info("Ebean server up and running.");
@@ -95,10 +137,25 @@ public class CreateDatabase {
 
     public EbeanServer getEbeanServer() {
         return ebeanServer;
-    }   
+    }  
     
-    public boolean ping() throws Exception{
-        ebeanServer.createSqlQuery("SELECT 1");
-        return true;
+    /**
+     * Database HealthCheck method.
+     * 
+     * @return true if it is healthy
+     */
+    public boolean ping(){
+        try{
+            SqlRow row = ebeanServer.createSqlQuery("SELECT 1").findUnique();
+            if (row.isEmpty()){
+                return false;
+            }
+            return true;
+        }
+        catch(Exception ex){
+            log.error("{} : During database query(SELECT 1) something went wrong! : {}", 
+                    LocalDate.now(), ex.toString());
+            return false;
+        }
     }
 }

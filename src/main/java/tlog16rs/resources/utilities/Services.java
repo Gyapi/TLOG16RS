@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tlog16rs.resources.utilities;
 
 import com.avaje.ebean.Ebean;
@@ -33,104 +28,36 @@ import tlog16rs.exceptions.WeekendNotEnabledException;
 
 /**
  *
- * A class containing the actual methods of the endpoints
+ * A class containing the actual methods behind the endpoints.
  * <br> The setters, which does not require special code, are generated through Lombok
  * <br> @see <a href="https://projectlombok.org/">https://projectlombok.org/</a>
  * @author Gyapi
  */
 @lombok.Getter
-@Slf4j
 public class Services {
     
-    private TimeLogger timelogger;
+    private final TimeLogger timelogger;
 
+    /**
+     * 
+     * Constructor of the object.
+     * Gets all necessary information from the Database
+     */
     public Services() {
         timelogger = Ebean.find(TimeLogger.class, 2);
-        //createContent();
         timelogger.getMonths().forEach((month) -> {
             month.convertItBack();
         });
-    }
-    
-    private void createContent(){
-        //-----------------Test code-----------------
-        //TODO : DELETE after obsolete
-        Task testTask1, testTask2, testTask3, testTask4, testTask5, 
-                testTask6, testTask7, testTask8, testTask9, testTask10, testTask11,
-                testTask12, testTask13;
-        WorkMonth testMonth1, testMonth2;
-        WorkDay testDay1, testDay2, testDay3, testDay4, testDay5;
-        
-        timelogger = new TimeLogger("Gyapi");
-        
-        try {
-            testMonth1 = new WorkMonth(2017, 10);
-            testTask1 = new Task("LT-0001", "Exception Test", "07:30", "07:45");
-            testTask2 = new Task("LT-0002", "Exception Test", "08:30", "08:45");
-            testDay1 = new WorkDay(120, 2017, 10, 10);
-            testDay1.addTask(testTask1);
-            testDay1.addTask(testTask2);
-            testMonth1.addWorkDay(testDay1);
-            testTask3 = new Task("LT-0003", "Exception Test", "07:30", "07:45");
-            testTask4 = new Task("LT-0004", "Exception Test", "08:30", "08:45");
-            testDay2 = new WorkDay(2017, 10, 11);
-            testDay2.addTask(testTask3);
-            testDay2.addTask(testTask4);
-            testMonth1.addWorkDay(testDay2);   
-
-            timelogger.addMonth(testMonth1);
-            
-            testMonth2 = new WorkMonth(2017, 9);
-            testTask5 = new Task("LT-0005", "Exception Test", "07:30", "07:45");
-            testTask6 = new Task("LT-0006", "Exception Test", "08:30", "08:45");
-            testDay3 = new WorkDay(120, 2017, 9, 8);
-            testDay3.addTask(testTask5);
-            testDay3.addTask(testTask6);
-            testMonth2.addWorkDay(testDay3);
-
-            testTask7 = new Task("LT-0007", "Exception Test", "07:30", "07:45");
-            testTask8 = new Task("LT-0008", "Exception Test", "08:30", "08:45");
-            testDay4 = new WorkDay(2017, 9, 11);
-            testDay4.addTask(testTask7);
-            testDay4.addTask(testTask8);
-            testMonth2.addWorkDay(testDay4);
-
-            testTask9 = new Task("LT-0009", "Exception Test", "07:30", "07:45");
-            testTask10 = new Task("LT-0010", "Exception Test", "08:30", "08:45");
-            testTask11 = new Task("LT-0011");
-            testTask11.setStartTime("08:45");
-            testTask11.setComment("Unfinished Test");  
-            testTask12 = new Task("LT-0012", "Exception Test", "10:30", "10:45"); 
-            testTask13 = new Task("LT-0013");
-            testTask13.setStartTime("07:15");
-            testTask13.setComment("Unfinished Test"); 
-            testDay5 = new WorkDay(2017, 9, 12);
-            testDay5.addTask(testTask9);
-            testDay5.addTask(testTask10);
-            testDay5.addTask(testTask11);
-            testDay5.addTask(testTask12);
-            testDay5.addTask(testTask13);
-            testMonth2.addWorkDay(testDay5);
-
-            timelogger.addMonth(testMonth2);
-            Ebean.save(timelogger);
-        } 
-        catch (EmptyTimeFieldException | FutureWorkException | InvalidTaskIdException |
-                NegativeMinutesOfWorkException | NoTaskIdException | NotExpectedTimeOrderException | 
-                NotNewDateException | NotNewMonthException | NotSeparatedTimesException | 
-                NotTheSameMonthException | WeekendNotEnabledException exception) {
-            System.out.println(exception);
-        }
-        //---------------------------------------------
-    }
-    
+    }    
     
     /**
      * 
      * Returns all the {@link WorkMonth WorkMonths} from the designated {@link TimeLogger TimeLogger} object 
      * as a serialized {@link String String}.
-     * Uses the {@link tlog16rs.core.Serializers.WorkMonthSerializer WorkMonthSerializer} class
-     * @return String
+     * <br>Uses the {@link tlog16rs.core.Serializers.WorkMonthSerializer WorkMonthSerializer} class
+     * 
+     * @return all the {@link WorkMonth WorkMonths} (linked to this timelogger) as a serialized {@link String String}
+     * 
      * @throws com.fasterxml.jackson.core.JsonProcessingException
      */    
     public String getMonths() 
@@ -152,12 +79,15 @@ public class Services {
     
     /**
      * 
-     * Gives back the selected {@link WorkMonth WorkMonth} as a serialized {@link String String}.
-     * Uses the {@link WorkMonthSerializer WorkMonthSerializer} class
-     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector} method
-     * @param wantedYear
-     * @param wantedMonth
-     * @return String
+     * Gives back the selected {@link WorkMonth WorkMonth} as a serialized {@link String String}. 
+     * <br>Uses the {@link WorkMonthSerializer WorkMonthSerializer} class
+     * <br>Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector} method
+     * 
+     * @param wantedYear : The selected month's year as a {@link String String}
+     * @param wantedMonth : The selected month's month of year value as a {@link String String}
+     * 
+     * @return String : the selected {@link WorkMonth WorkMonths} as a serialized {@link String String}
+     * 
      * @throws NumberFormatException
      * @throws JsonProcessingException 
      */
@@ -179,8 +109,10 @@ public class Services {
     
     /**
      * 
-     * Deletes all {@link WorkMonth WorkMonth} object from the {@link Timelogger Timelogger's} list
-     * @return String
+     * Deletes all {@link WorkMonth WorkMonth} object from the {@link Timelogger Timelogger's} list, 
+     * as well as from the database.
+     * 
+     * @return String : Message about the sucsess of the deletion
      */
     public String deleteAllMonths(){
                 
@@ -198,9 +130,11 @@ public class Services {
     /**
      * 
      * Returns all the {@link WorkDay WorkDays} from the designated {@link TimeLogger TimeLogger} object 
-     * as a serialized {@link String String}
-     * Uses the {@link WorkDaySerializer WorkDaySerializer} class
-     * @return String
+     * as a serialized {@link String String}.
+     * <br>Uses the {@link WorkDaySerializer WorkDaySerializer} class
+     * 
+     * @return the {@link WorkDay WorkDays} as a serialized {@link String String}
+     * 
      * @throws com.fasterxml.jackson.core.JsonProcessingException
      */  
     public String getDays() 
@@ -229,14 +163,17 @@ public class Services {
     }
          
     
-        /**
+    /**
      * 
-     * Returns the selected {@link WorkDay WorkDay} as a serialized {@link String String}
-     * Uses {@link WorkDaySerializer WorkDaySerializer} as serializer
-     * @param wantedYear
-     * @param wantedMonth
-     * @param wantedDay
-     * @return String
+     * Returns the selected {@link WorkDay WorkDay} as a serialized {@link String String}.
+     * <br>Uses {@link WorkDaySerializer WorkDaySerializer} as serializer
+     * 
+     * @param wantedYear the date's year value as {@link String String}
+     * @param wantedMonth the date's month of year value as {@link String String}
+     * @param wantedDay the date's day of month value as {@link String String}
+     * 
+     * @return String the selected {@link WorkDay WorkDay} as a serialized {@link String String}
+     * 
      * @throws NumberFormatException
      * @throws JsonProcessingException
      * @throws FutureWorkException 
@@ -274,10 +211,13 @@ public class Services {
     
     /**
      * 
-     * Created a new {@link WorkDay WorkDay} object from the given {@link WorkDayRB workDayRB} object
-     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector} method
-     * @param day
-     * @return
+     * Creates a new {@link WorkDay WorkDay} object from the given {@link WorkDayRB workDayRB} object.
+     * <br>Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector} method
+     * 
+     * @param day the {@link WorkDayRB WorkDayRB} object we want to work with
+     * 
+     * @return the created {@link WorkDay WorkDay} object
+     * 
      * @throws NotNewMonthException
      * @throws FutureWorkException
      * @throws NotTheSameMonthException
@@ -318,9 +258,11 @@ public class Services {
     /**
      * 
      * Returns all the {@link Task Tasks} from the designated {@link TimeLogger TimeLogger} object 
-     * as a serialized {@link String String}
-     * Uses the {@link TaskSerializer TaskSerializer} class
-     * @return String
+     * as a serialized {@link String String}.
+     * <br>Uses the {@link TaskSerializer TaskSerializer} class
+     * 
+     * @return the {@link Task Tasks} as a serialized {@link String String}
+     * 
      * @throws com.fasterxml.jackson.core.JsonProcessingException
      */  
     public String getTasks() 
@@ -352,11 +294,14 @@ public class Services {
     }
     
     /**
-     * Starts a new {@link Task Task} object from the given {@link TaskRB TaskRB} object
-     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector, 
+     * Starts a new {@link Task Task} object from the given {@link TaskRB TaskRB} object.
+     * <br>Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) monthSelector, 
      * {@link #daySelector(tlog16rs.core.Entities.WorkMonth, tlog16rs.core.Entities.WorkDay)  dayselector} methods
-     * @param task
-     * @return Task
+     * 
+     * @param task the {@link TaskRB TaskRB} object we work with
+     * 
+     * @return the created {@link Task task} object
+     * 
      * @throws NotNewMonthException
      * @throws FutureWorkException
      * @throws NotTheSameMonthException
@@ -401,12 +346,15 @@ public class Services {
     
      /**
      * 
-     * Finishes the selected {@link Task task} with the given {@link TaskRB TaskRB's} properties
-     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth)  monthSelector},
+     * Finishes the selected {@link Task task} with the given {@link TaskRB TaskRB's} properties.
+     * <br>Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth)  monthSelector},
      * {@link #daySelector(tlog16rs.core.Entities.WorkMonth, tlog16rs.core.Entities.WorkDay)  daySelector}, 
      * {@link #taskSelector(tlog16rs.core.Entities.WorkDay, tlog16rs.core.Entities.Task)  taskSelector} methods
-     * @param task
-     * @return Task
+     * 
+     * @param task the {@link FinishTaskRB FinishTaskRB} object we work with
+     * 
+     * @return the finished {@link Task Task}
+     * 
      * @throws NotNewMonthException
      * @throws FutureWorkException
      * @throws NotTheSameMonthException
@@ -463,15 +411,18 @@ public class Services {
         return modifyThisTask;
     }    
 
-        /**
+    /**
      * 
-     * Modifies the selected {@link Task Task}
-     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) nthSelector monthSelector},
+     * Modifies the selected {@link Task Task}.
+     * <br>Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) nthSelector monthSelector},
      * {@link #daySelector(tlog16rs.core.Entities.WorkMonth, tlog16rs.core.Entities.WorkDay) daySelector}, 
      * {@link #taskSelector taskSelector}, {@link #createTask(tlog16rs.core.Util.ModifyTaskRB) createTask},
      * {@link #modifyThisTask(tlog16rs.core.Entities.Task, tlog16rs.core.Util.ModifyTaskRB) modifyThisTask} methods
-     * @param task
-     * @return Task
+     * 
+     * @param task the {@link ModifyTaskRB ModifyTaskRB} object we work with
+     * 
+     * @return the modified {@link Task Task}
+     * 
      * @throws NotNewMonthException
      * @throws FutureWorkException
      * @throws NotTheSameMonthException
@@ -530,12 +481,15 @@ public class Services {
         /**
      * 
      * Deletes the chosen {@link Task Task} based on the parameters of the given 
-     * {@link DeleteTaskRB DeleteTaskRB}
-     * Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) nthSelector monthSelector},
+     * {@link DeleteTaskRB DeleteTaskRB}.
+     * <br>Uses the {@link #monthSelector(tlog16rs.core.Entities.WorkMonth) nthSelector monthSelector},
      * {@link #daySelector(tlog16rs.core.Entities.WorkMonth, tlog16rs.core.Entities.WorkDay) daySelector}, 
      * {@link #taskSelector taskSelector}, {@link #createTask(tlog16rs.core.Util.ModifyTaskRB) createTask} methods
-     * @param task
-     * @return boolean
+     * 
+     * @param task the {@link DeleteTaskRB DeleteTaskRB} object we work with
+     * 
+     * @return boolean true if the {@link Task task} is deleted
+     * 
      * @throws FutureWorkException
      * @throws InvalidTaskIdException
      * @throws NoTaskIdException
@@ -584,9 +538,11 @@ public class Services {
     /**
      * 
      * Based on the given {@link WorkMonth WorkMonth's} date, finds it in the {@link TimeLogger Timelogger's}
-     * month list and gives it back
-     * @param month
-     * @return WorkMonth 
+     * month list and gives it back.
+     * 
+     * @param month the {@link WorkMonth WorkMonth} we are looking for
+     * 
+     * @return the found {@link WorkMonth WorkMonth} from the list
      */
     private WorkMonth monthSelector(WorkMonth month){
         
@@ -604,10 +560,12 @@ public class Services {
     /**
      * 
      * Based on the given {@link WorkDay WorkDay's} date, finds it in the {@link WorkMonth WorkMonth's}
-     * month list and gives it back
-     * @param month
-     * @param day
-     * @return WorkDay
+     * month list and gives it back.
+     * 
+     * @param month the {@link WorkMonth WorkMonth} where the searched day is
+     * @param day the {@link WorkDay WorkDay} we are looking for
+     * 
+     * @return the found {@link WorkDay WorkDay}
      */
     private WorkDay daySelector(WorkMonth month, WorkDay day){
         
@@ -625,10 +583,12 @@ public class Services {
     /**
      * 
      * Based on the given {@link Task Task's} propeties, selects it from the given
-     * {@link WorkDay WorkDay's} task list
-     * @param day
-     * @param task
-     * @return Task
+     * {@link WorkDay WorkDay's} task list.
+     * 
+     * @param day the {@link WorkDay WorkDay} the task is in
+     * @param task the {@link Task Task} we are looking for
+     * 
+     * @return the found {@link Task Task}
      */
     private Task taskSelector(WorkDay day, Task task){
         
@@ -645,9 +605,12 @@ public class Services {
 
     /**
      * 
-     * Creates a new {@link Task Task} object from the given {@link ModifyTaskRB ModifyTaskRB}
-     * @param task
-     * @return Task
+     * Creates a new {@link Task Task} object from the given {@link ModifyTaskRB ModifyTaskRB}.
+     * 
+     * @param task {@link ModifyTaskRB ModifyTaskRB} we work with
+     * 
+     * @return created {@link Task Task}
+     * 
      * @throws InvalidTaskIdException
      * @throws NoTaskIdException
      * @throws EmptyTimeFieldException
@@ -684,9 +647,12 @@ public class Services {
     /**
      * 
      * Modifies the given {@link Task Task} with the given {@link ModifyTaskRB ModifyTaskRB's} properties
-     * @param selected
-     * @param modifier
-     * @return
+     * 
+     * @param selected the {@link Task Task} we want to modify
+     * @param modifier the {@link ModifyTaskRB ModifyTaskRB} we work with
+     * 
+     * @return the modified {@link Task Task}
+     * 
      * @throws EmptyTimeFieldException
      * @throws NotExpectedTimeOrderException 
      */

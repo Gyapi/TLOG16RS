@@ -1,12 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tlog16rs.resources.RBobjects;
 
 /**
- *
+ * 
+ * Created to help the designated endpoint's object handling.
+ * <br>
+ * <br> The getters, setters, contructor are generated through Lombok
+ * <br> @see <a href="https://projectlombok.org/">https://projectlombok.org/</a>
+ * 
  * @author Gyapi
  */
 @lombok.NoArgsConstructor
@@ -16,5 +16,4 @@ public class WorkMonthRB {
     
     int year;
     int month;   
-    
 }

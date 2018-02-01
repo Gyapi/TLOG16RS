@@ -5,7 +5,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * 
- * Basic applicaiton configuration
+ * Basic applicaiton configuration.
+ * <br>Gets the required information from ./src/dist/config.yml
+ * <br>Next to it, there is a template file for Docker
+ * 
  * @author Gyapi
  */
 @lombok.Getter

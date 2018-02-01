@@ -4,8 +4,6 @@ import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;

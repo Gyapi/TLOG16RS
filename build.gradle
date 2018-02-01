@@ -30,8 +30,7 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-
+dependencies {     
     compile group: 'org.projectlombok', name: 'lombok', version: lombokVersion
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion	
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
@@ -43,8 +42,7 @@ dependencies {
     compile group: 'org.avaje.ebeanorm', name: 'avaje-ebeanorm-agent', version: avajeEbeanormVersion
     compile group: 'org.liquibase', name: 'liquibase-core', version: liquibaseVersion
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'io.dropwizard', name: 'dropwizard-testing',  version: '1.2.2'	
-        
+    testCompile group: 'io.dropwizard', name: 'dropwizard-testing',  version: '1.2.2'        
 }
 
 run {
