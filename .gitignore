@@ -22,3 +22,5 @@ gradle-app.setting
 .gradletasknamecache
 /src/main/java/tlog16rs/core/View/TimeLoggerUI.java
 /src/main/java/tlog16rs/resources/Respond.java
+/sonar-project.properties
+/.scannerwork/

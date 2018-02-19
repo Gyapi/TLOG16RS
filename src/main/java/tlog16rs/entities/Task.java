@@ -11,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import tlog16rs.resources.serializers.TaskSerializer;
 
 /**
@@ -47,9 +48,14 @@ public class Task {
     private LocalTime endTime;
     @Column(name = "comment")
     private String comment;
-    //TODO: UPDATE-kor nézzél már rá
     @Column (name = "min_per_task")
     private long minPerTask;
+    @Transient
+    private static final String wtoException = "Wrong time order. Please try again.";
+    @Transient
+    private static final String stmException = "Start time missing. Please try again.";
+    @Transient
+    private static final String etmException = "End time missing. Please try again.";
     
     /**
      * 
@@ -82,7 +88,7 @@ public class Task {
             LocalTime endCheck = timeConvert(endHour, endMin);
             
             if (!startCheck.isBefore(endCheck)){
-                throw new NotExpectedTimeOrderException("Wrong time order. Please try again.");
+                throw new NotExpectedTimeOrderException(wtoException);
             }
             else{
                 fillWithValidValues(taskId, comment, startCheck, endCheck);
@@ -117,17 +123,17 @@ public class Task {
         
         if(taskIDCheck(taskId)){            
             if (startTime.equals("") || startTime.equals(" ")){
-                throw new EmptyTimeFieldException("Start time missing. Please try again.");
+                throw new EmptyTimeFieldException(stmException);
             }
             if (endTime.equals("") || endTime.equals(" ")){
-                throw new EmptyTimeFieldException("End time missing. Please try again.");            
+                throw new EmptyTimeFieldException(etmException);            
             }
 
             LocalTime startCheck = timeConvert(startTime);
             LocalTime endCheck = timeConvert(endTime);
 
             if (!startCheck.isBefore(endCheck)){
-                throw new NotExpectedTimeOrderException("Wrong time order. Please try again.");
+                throw new NotExpectedTimeOrderException(wtoException);
             }
             else{
                 fillWithValidValues(taskId, comment, startCheck, endCheck);
@@ -279,15 +285,15 @@ public class Task {
             throws EmptyTimeFieldException{
         
         if (startTime == null){
-            throw new EmptyTimeFieldException("Start time missing. Please try again."); 
+            throw new EmptyTimeFieldException(stmException); 
         }
         if (endTime == null){ 
-            throw new EmptyTimeFieldException("End time missing. Please try again."); 
+            throw new EmptyTimeFieldException(etmException); 
         }
         else{
             minPerTask = 0;
-            minPerTask = ((endTime.getHour() - startTime.getHour())*60) + 
-                    (endTime.getMinute()- startTime.getMinute());
+            minPerTask = (((long)endTime.getHour() - (long)startTime.getHour())*60) + 
+                    ((long)endTime.getMinute()- (long)startTime.getMinute());
         }
     }
        
@@ -350,7 +356,7 @@ public class Task {
             throws EmptyTimeFieldException, NotExpectedTimeOrderException {        
 
         if (this.endTime != null && !startTime.isBefore(this.endTime)){
-            throw new NotExpectedTimeOrderException("Wrong time order. Please try again.");
+            throw new NotExpectedTimeOrderException(wtoException);
         }
         else{
             this.startTime = startTime;
@@ -417,7 +423,7 @@ public class Task {
             throws NotExpectedTimeOrderException, EmptyTimeFieldException{
         
         if (!this.startTime.isBefore(endTime)){
-            throw new NotExpectedTimeOrderException("Wrong time order. Please try again.");            
+            throw new NotExpectedTimeOrderException(wtoException);            
         }
         else {
             if (!Util.isMultipleQuarterHour(this.startTime, endTime)){                

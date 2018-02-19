@@ -1,5 +1,6 @@
 plugins {
     id 'pl.allegro.tech.build.axion-release' version '1.4.0'
+    id "org.sonarqube" version "2.5"
 }
 
 apply plugin: 'java'
@@ -42,7 +43,7 @@ dependencies {
     compile group: 'org.avaje.ebeanorm', name: 'avaje-ebeanorm-agent', version: avajeEbeanormVersion
     compile group: 'org.liquibase', name: 'liquibase-core', version: liquibaseVersion
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'io.dropwizard', name: 'dropwizard-testing',  version: '1.2.2'        
+    testCompile group: 'io.dropwizard', name: 'dropwizard-testing',  version: '1.2.2'  
 }
 
 run {

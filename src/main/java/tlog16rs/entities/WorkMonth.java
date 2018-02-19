@@ -55,7 +55,6 @@ public class WorkMonth {
     private long sumPerMonth;
     @Column(name = "required_min_per_month") 
     private long requiredMinPerMonth;
-    //TODO: UPDATE-kor nézzél már rá
     @Column(name = "extra_min_per_month")
     private long extraMinPerMonth;
     @Transient

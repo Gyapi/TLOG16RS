@@ -54,7 +54,7 @@ public class TLOG16RSHealthCheck extends HealthCheck{
         }
         
         log.info("Testing Database Connection");
-        if (!database.ping()){
+        if (database.ping()){
             log.info("ERROR: Database Unreachable!");
             return Result.unhealthy("ERROR: Database Unreachable!");
         }    

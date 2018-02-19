@@ -9,7 +9,6 @@ import tlog16rs.resources.RBobjects.WorkDayRB;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalTime;
-import lombok.extern.slf4j.Slf4j;
 import tlog16rs.entities.Task;
 import tlog16rs.entities.TimeLogger;
 import tlog16rs.entities.WorkDay;
@@ -37,6 +36,7 @@ import tlog16rs.exceptions.WeekendNotEnabledException;
 public class Services {
     
     private final TimeLogger timelogger;
+    private static final String nothingHere = "Nothing is here";
 
     /**
      * 
@@ -63,16 +63,17 @@ public class Services {
     public String getMonths() 
             throws JsonProcessingException{
         
-        String returnMe = "";
+        String returnMe = "[";
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
         
         if (timelogger.getMonths().isEmpty()){
-            return "Nothing is here";
+            return nothingHere;
         }
         else{            
             for (WorkMonth month : timelogger.getMonths()){
-                returnMe += objectMapper.writeValueAsString(month) + "\n\n";
-            }            
+                returnMe += objectMapper.writeValueAsString(month) + ",";
+            }     
+            returnMe = returnMe.substring(0, returnMe.length() - 1) + "]";
             return returnMe;
         }
     }
@@ -122,7 +123,7 @@ public class Services {
                 month = null;
             });
             timelogger.getMonths().clear();
-            return "Deletetion of WorkMonths: SUCCESSFUL";
+            return "Deletion of WorkMonths: SUCCESSFUL";
         }
         return "There is nothing to delete here.";
     }
@@ -156,7 +157,7 @@ public class Services {
                 }
             }
             if (returnMe.equals("")){
-                returnMe = "Nothing is here";
+                returnMe = nothingHere;
             }
             return returnMe; 
         } 
@@ -181,7 +182,7 @@ public class Services {
      */
     public String getSelectedDay(String wantedYear, String wantedMonth, String wantedDay)
         throws NumberFormatException, JsonProcessingException, FutureWorkException,
-            NegativeMinutesOfWorkException{
+            NegativeMinutesOfWorkException {
         
         String returnMe = "No such day exists";
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -268,29 +269,30 @@ public class Services {
     public String getTasks() 
             throws JsonProcessingException{
 
-        String returnMe = "Nothing is here";
+        String returnMe = "[";
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
         if (timelogger.getMonths().isEmpty()){
-            return returnMe;
+            return nothingHere;
         }
         else{
             for (WorkMonth month : timelogger.getMonths()){
                 if (!month.getDays().isEmpty()){
                     for (WorkDay day : month.getDays()){
                         if (!day.getTasks().isEmpty()){
-                            returnMe = "";
                             for (Task task: day.getTasks()){
-                                returnMe += objectMapper.writeValueAsString(task) + "\n";
-                            }
-                            returnMe += "\n";  
+                                returnMe += objectMapper.writeValueAsString(task) + ",";
+                            }  
                         }
                     }
-                    returnMe += "\n";
                 }
             }
-            return returnMe;  
         }
+        returnMe = returnMe.substring(0, returnMe.length() - 1) + "]";
+        if (returnMe.equals("]")){
+            return nothingHere;                
+        }
+        return returnMe;  
     }
     
     /**
@@ -318,7 +320,7 @@ public class Services {
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException, 
             NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException,
             NoTaskIdException, EmptyTimeFieldException, NotExpectedTimeOrderException,
-            NotSeparatedTimesException, NegativeMinutesOfWorkException{
+            NotSeparatedTimesException, NegativeMinutesOfWorkException {
         
         WorkMonth month = new WorkMonth(task.getYear(), task.getMonth()); 
         if (timelogger.isNewMonth(month)){
@@ -370,7 +372,8 @@ public class Services {
     public Task finishThatThask(FinishTaskRB task) 
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException,
             NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException,
-            NotExpectedTimeOrderException, EmptyTimeFieldException, NoTaskIdException, NotSeparatedTimesException, NegativeMinutesOfWorkException {        
+            NotExpectedTimeOrderException, EmptyTimeFieldException, NoTaskIdException, 
+            NotSeparatedTimesException, NegativeMinutesOfWorkException {        
         
         WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
         
@@ -499,7 +502,7 @@ public class Services {
      */
     public boolean deleteThisTask(DeleteTaskRB task) 
             throws FutureWorkException, InvalidTaskIdException, NoTaskIdException, 
-            EmptyTimeFieldException, NotExpectedTimeOrderException, NegativeMinutesOfWorkException{
+            EmptyTimeFieldException, NotExpectedTimeOrderException, NegativeMinutesOfWorkException {
         
         WorkMonth month = new WorkMonth(task.getYear(), task.getMonth());
         
@@ -530,7 +533,6 @@ public class Services {
             day.getTasks().remove(deleteThis);
             day.extraMinPerDay();
             month.extraMinPerMonth();
-            deleteThis = null;
             return true;
             }      
     }

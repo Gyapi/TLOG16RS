@@ -61,7 +61,6 @@ public class WorkDay {
     private LocalDate actualDay;
     @Column(name = "sum_per_day")
     private long sumPerDay; 
-    //TODO: UPDATE-kor nézzél már rá
     @Column(name = "extra_min_per_day")
     private long extraMinPerDay;
     

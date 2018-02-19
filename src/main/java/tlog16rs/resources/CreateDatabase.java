@@ -147,15 +147,12 @@ public class CreateDatabase {
     public boolean ping(){
         try{
             SqlRow row = ebeanServer.createSqlQuery("SELECT 1").findUnique();
-            if (row.isEmpty()){
-                return false;
-            }
-            return true;
+            return row.isEmpty();
         }
         catch(Exception ex){
             log.error("{} : During database query(SELECT 1) something went wrong! : {}", 
                     LocalDate.now(), ex.toString());
-            return false;
+            return true;
         }
     }
 }
