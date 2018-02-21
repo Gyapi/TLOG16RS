@@ -217,6 +217,6 @@ public class WorkMonth {
     public void extraMinPerMonth(){ 
         requiredPerMonth();
         sumPerMonth();
-        this.extraMinPerMonth = requiredMinPerMonth - sumPerMonth;
+        this.extraMinPerMonth = sumPerMonth - requiredMinPerMonth;
     }   
 }
