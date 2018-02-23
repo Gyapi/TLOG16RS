@@ -6,6 +6,8 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import java.sql.SQLException;
 import liquibase.exception.LiquibaseException;
+import org.glassfish.jersey.server.ResourceConfig;
+import tlog16rs.resources.CORSFilter;
 import tlog16rs.resources.utilities.TLOG16RSHealthCheck;
 import tlog16rs.resources.CreateDatabase;
 
@@ -29,6 +31,7 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
                     final Environment environment) throws SQLException, LiquibaseException {
         //Database connection - Ebean server
         final CreateDatabase database = new CreateDatabase(configuration); 
+        environment.jersey().register(new CORSFilter());
         //HealthCheck
         environment.healthChecks().register("HealthCheck", new TLOG16RSHealthCheck(database));
         //Endpoints

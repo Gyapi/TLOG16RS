@@ -217,8 +217,6 @@ public class Services {
      * 
      * @param day the {@link WorkDayRB WorkDayRB} object we want to work with
      * 
-     * @return the created {@link WorkDay WorkDay} object
-     * 
      * @throws NotNewMonthException
      * @throws FutureWorkException
      * @throws NotTheSameMonthException
@@ -226,7 +224,7 @@ public class Services {
      * @throws WeekendNotEnabledException
      * @throws NegativeMinutesOfWorkException 
      */
-    public WorkDay createDay(WorkDayRB day) 
+    public void createDay(WorkDayRB day) 
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException,
             NotNewDateException, WeekendNotEnabledException, NegativeMinutesOfWorkException {
         
@@ -252,8 +250,6 @@ public class Services {
         else{
             month.addWorkDay(newDay);
         }
-        
-        return newDay;
     }
     
     /**
@@ -302,8 +298,6 @@ public class Services {
      * 
      * @param task the {@link TaskRB TaskRB} object we work with
      * 
-     * @return the created {@link Task task} object
-     * 
      * @throws NotNewMonthException
      * @throws FutureWorkException
      * @throws NotTheSameMonthException
@@ -316,7 +310,7 @@ public class Services {
      * @throws NotSeparatedTimesException 
      * @throws tlog16rs.exceptions.NegativeMinutesOfWorkException 
      */
-    public Task starTask(TaskRB task) 
+    public void starTask(TaskRB task) 
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException, 
             NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException,
             NoTaskIdException, EmptyTimeFieldException, NotExpectedTimeOrderException,
@@ -341,9 +335,7 @@ public class Services {
         Task newTask = new Task(task.getTaskId());        
         newTask.setComment(task.getComment());
         newTask.setStartTime(task.getStartTime());        
-        day.addTask(newTask);
-        
-        return newTask;        
+        day.addTask(newTask);       
     }  
     
      /**
@@ -354,8 +346,6 @@ public class Services {
      * {@link #taskSelector(tlog16rs.core.Entities.WorkDay, tlog16rs.core.Entities.Task)  taskSelector} methods
      * 
      * @param task the {@link FinishTaskRB FinishTaskRB} object we work with
-     * 
-     * @return the finished {@link Task Task}
      * 
      * @throws NotNewMonthException
      * @throws FutureWorkException
@@ -369,7 +359,7 @@ public class Services {
      * @throws NotSeparatedTimesException 
      * @throws tlog16rs.exceptions.NegativeMinutesOfWorkException 
      */
-    public Task finishThatThask(FinishTaskRB task) 
+    public void finishThatThask(FinishTaskRB task) 
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException,
             NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException,
             NotExpectedTimeOrderException, EmptyTimeFieldException, NoTaskIdException, 
@@ -411,7 +401,6 @@ public class Services {
         
         day.extraMinPerDay();
         month.extraMinPerMonth();
-        return modifyThisTask;
     }    
 
     /**
@@ -423,8 +412,6 @@ public class Services {
      * {@link #modifyThisTask(tlog16rs.core.Entities.Task, tlog16rs.core.Util.ModifyTaskRB) modifyThisTask} methods
      * 
      * @param task the {@link ModifyTaskRB ModifyTaskRB} object we work with
-     * 
-     * @return the modified {@link Task Task}
      * 
      * @throws NotNewMonthException
      * @throws FutureWorkException
@@ -438,7 +425,7 @@ public class Services {
      * @throws NotSeparatedTimesException 
      * @throws tlog16rs.exceptions.NegativeMinutesOfWorkException 
      */
-    public Task modifyTask(ModifyTaskRB task) 
+    public void modifyTask(ModifyTaskRB task) 
             throws NotNewMonthException, FutureWorkException, NotTheSameMonthException, 
             NotNewDateException, WeekendNotEnabledException, InvalidTaskIdException, 
             NotExpectedTimeOrderException, EmptyTimeFieldException, NoTaskIdException,
@@ -477,8 +464,7 @@ public class Services {
         }
         
         day.extraMinPerDay();
-        month.extraMinPerMonth();
-        return modified;        
+        month.extraMinPerMonth();     
     }
     
         /**

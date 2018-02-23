@@ -2,6 +2,7 @@ package tlog16rs.resources;
 
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.sql.SQLException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import javax.ws.rs.Consumes;
@@ -46,30 +47,23 @@ import tlog16rs.resources.RBobjects.WorkMonthRB;
  * @author Gyapi
  */
 @Path("/timelogger")
-@Produces(MediaType.APPLICATION_JSON)
 @Slf4j
 public class TLOG16RSResource {
     
     private final Services services = new Services();
     
     @GET
-    @Path("/workmonths")    
+    @Path("/workmonths")   
     public Response getAllMonths(){
         
         try {        
-            return Response.ok(services.getMonths())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
-                    .build();
+            return Response.ok(services.getMonths()).build();
         } 
         catch (JsonProcessingException ex) {
             log.error("{} : @GET, getAllMonths : {}", LocalDate.now(), ex.toString());
-            return Response.status(500).entity("Status: 500\nInternal Server Error\n" + LocalDate.now().toString() + "\n" + 
-                    "@GET, getAllMonths : " + "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
+            return Response.status(500).entity("Status: 500\nInternal Server Error\n" +
+                    LocalDate.now().toString() + 
+                    "\n" + ex.toString())
                     .build();
         }
     }
@@ -80,29 +74,21 @@ public class TLOG16RSResource {
         @PathParam(value = "month") String month){
         
         try {          
-            return Response.ok(services.getSelectedMonth(year, month))
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
-                    .build();         
+            return Response.ok(services.getSelectedMonth(year, month)).build();         
         } 
         catch (NumberFormatException | DateTimeException ex) {
             log.error("{} : @GET, getSelectedMonth : {}.{} : {}", LocalDate.now(), year, month, ex.toString());
-           return Response.status(400).entity("Status: 400\nBad Request\n" + LocalDate.now().toString() + "\n" + 
-                    "@GET getSelectedMonth : " + year + " " + month + "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
+            return Response.status(400).entity("Status: 400\nBad Request\n" +
+                    LocalDate.now().toString() + 
+                    "\n" + ex.toString())
                     .build();
         }
         catch (JsonProcessingException ex) {
             log.error("{} : @GET, getSelectedMonth : {}.{} : {}", LocalDate.now(), year, month, ex.toString());
-           return Response.status(500).entity("Status: 500\nInternal Server Error\n" + LocalDate.now().toString() 
-                   + "\n@GET getSelectedMonth : " + year + " " + month + "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
-                    .build();
+            return Response.status(500).entity("Status: 500\nInternal Server Error\n" + 
+                   LocalDate.now().toString() +
+                   "\n" + ex.toString())
+                   .build();
         }
         
     }    
@@ -117,24 +103,21 @@ public class TLOG16RSResource {
         try {
             services.getTimelogger().addMonth(workMonth);
             Ebean.save(services.getTimelogger());
-            return Response.ok(workMonth)
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST")
-                    .allow("OPTIONS")
-                    .build();         
+            
+            return Response.ok(workMonth).build();         
         } 
         catch (NotNewMonthException  ex) {
             log.error("{} : @POST, addNewMonth : {} : {}", LocalDate.now(), workMonth.getDate(), ex.toString());
-            return Response.status(409).entity("Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" + 
-                    "@POST, addNewMonth : " + workMonth.getDate().toString() + "\n" + ex.toString()).build();
+            return Response.status(409).entity("Status: 409\nConflict\n" +
+                    LocalDate.now().toString() + 
+                    "\n" + ex.toString())
+                    .build();
         }
         catch (DateTimeException ex) {
             log.error("{} : @POST, addNewMonth : {} : {}", LocalDate.now(), workMonth.getDate(), ex.toString());
-            return Response.status(400).entity("Status: 400\nBad Rquest\n" + LocalDate.now().toString() + "\n" + 
-                    "@POST, addNewMonth : " + workMonth.getDate().toString() + "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST")
-                    .allow("OPTIONS")
+            return Response.status(400).entity("Status: 400\nBad Rquest\n" +
+                    LocalDate.now().toString() +
+                    "\n" + ex.toString())
                     .build();
         }
     }
@@ -143,11 +126,7 @@ public class TLOG16RSResource {
     @Path("/workmonths/deleteall")
     public Response deleteAllMonths(){
         
-        return Response.ok(services.deleteAllMonths())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
-                    .build();         
+        return Response.ok(services.deleteAllMonths()).build();         
     }
 
     @GET
@@ -155,19 +134,13 @@ public class TLOG16RSResource {
     public Response getAllDays(){        
         
         try {
-            return Response.ok(services.getDays())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
-                    .build();
+            return Response.ok(services.getDays()).build();
         }
         catch (JsonProcessingException ex) {
             log.error("{} : @GET, getAllDays : {}", LocalDate.now(), ex.toString());
-            return Response.status(500).entity("Status: 500\nInternal Server Error\n" + LocalDate.now().toString() +
-                    "\n@GET, getAllDays\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
+            return Response.status(500).entity("Status: 500\nInternal Server Error\n" +
+                    LocalDate.now().toString() +
+                    "\n" + ex.toString())
                     .build(); 
         }        
     }
@@ -179,27 +152,18 @@ public class TLOG16RSResource {
         
         try {    
             return Response.ok(services.getSelectedDay(year, month, day))
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
                     .build();     
         } 
         catch (JsonProcessingException | NullPointerException ex) {
             log.error( "{} : @GET, getSelectedDay : {}.{}.{} : {}",LocalDate.now(), year, month, day, ex.toString());
             return Response.status(500).entity("Status: 500\nInternal Server Error\n" + LocalDate.now().toString() +
                     "\n@GET, getSelectedDay: " + year + "." + month + "." + day + "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
                     .build();
         }
         catch (NumberFormatException | FutureWorkException | DateTimeException | NegativeMinutesOfWorkException ex) {            
             log.error( "{} : @GET, getSelectedDay : {}.{}.{} : {}",LocalDate.now(), year, month, day, ex.toString());
             return Response.status(400).entity("Status: 400\nBad Request\n" + LocalDate.now().toString() +
                     "\n@GET, getSelectedDay: " + year + "." + month + "." + day + "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
                     .build();
         }
     }
@@ -208,70 +172,50 @@ public class TLOG16RSResource {
     @Path("/workmonths/workdays")    
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addNewWorkDay(WorkDayRB day){
-        
         try {
-            WorkDay workDay =  services.createDay(day);
+            services.createDay(day);
             Ebean.save(services.getTimelogger());
-            return Response.ok(workDay)
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST")
-                    .allow("OPTIONS")
-                    .build(); 
-        } 
+            return Response.ok("Status: 200\nSucess").build();
+        }  
         catch (NotNewMonthException | NotNewDateException ex) {
             log.error("{} : @POST, addNewDay : {}.{}.{} : {} : {}", LocalDate.now(),
                     day.getYear(), day.getMonth(), day.getDay(), day.isWeekEnd(), ex.toString());
-            return Response.status(409).entity("Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" + 
-                    "@POST, addNewMonth : " + day.getYear() + "." + day.getMonth() + "." + day.getDay() + 
+            return Response.status(409).entity("Status: 409\nConflict\n" +
+                    LocalDate.now().toString() + 
                     "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST")
-                    .allow("OPTIONS")
                     .build(); 
         }
         catch (FutureWorkException | NotTheSameMonthException | WeekendNotEnabledException |
                 NegativeMinutesOfWorkException | DateTimeException ex) {
             log.error("{} : @POST, addNewDay : {}.{}.{} : {} : {}", LocalDate.now(),
                     day.getYear(), day.getMonth(), day.getDay(), day.isWeekEnd(), ex.toString());
-            return Response.status(400).entity("Status: 400\nBad Request\n" + LocalDate.now().toString() + "\n" + 
-                    "@POST, addNewMonth : " + day.getYear() + "." + day.getMonth() + "." + day.getDay() + 
+            return Response.status(400).entity("Status: 400\nBad Request\n" 
+                    + LocalDate.now().toString() +  
                     "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST")
-                    .allow("OPTIONS")
                     .build(); 
         }
         catch (NullPointerException ex) {
             log.error("{} : @POST, addNewDay : {}.{}.{} : {} : {}", LocalDate.now(),
                     day.getYear(), day.getMonth(), day.getDay(), day.isWeekEnd(), ex.toString());
-            return Response.status(500).entity("Status: 400\nInternal Server Error\n" + LocalDate.now().toString() +
-                    "\n@POST, addNewMonth : " + day.getYear() + "." + day.getMonth() + "." + day.getDay() + 
+            return Response.status(500).entity("Status: 500\nInternal Server Error\n" +
+                    LocalDate.now().toString() +
                     "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST")
-                    .allow("OPTIONS")
                     .build(); 
         }
     }
     
     @GET
-    @Path("/workmonths/workdays/tasks")
+    @Path("/workmonths/workdays/tasks") 
     public Response getAllTasks(){
         
         try {
-            return Response.ok(services.getTasks())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
-                    .build();
+            return Response.ok(services.getTasks()).build();
         } 
         catch (JsonProcessingException ex) {
             log.error("{} : @GET, getAllTasks : {}", LocalDate.now(), ex.toString());
-            return Response.status(500).entity("Status: 500\nInternal Server Error\n" + LocalDate.now() +
-                    "\n@GET, getAllTasks\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "GET")
-                    .allow("OPTIONS")
+            return Response.status(500).entity("Status: 500\nInternal Server Error\n" +
+                    LocalDate.now() +
+                    "\n" + ex.toString())
                     .build();
         }        
     }
@@ -282,25 +226,17 @@ public class TLOG16RSResource {
     public Response startTask(TaskRB task){
         
         try {
-           Task startedTask = services.starTask(task);
+           services.starTask(task);
            Ebean.save(services.getTimelogger());
-           return Response.ok(startedTask)
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST")
-                    .allow("OPTIONS")
-                    .build();
+            return Response.ok("Status: 200\nSucess").build();
         } 
         catch (NotNewMonthException | NotNewDateException ex) {
             log.error("{} : @POST, startTask : {} - {}.{}.{} - {} '{}' {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     task.getComment(), ex.toString());
-            return Response.status(409).entity("Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" + 
-                    "@POST, startTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
-                    "." + task.getDay() + " : " +  task.getStartTime() + " : '" + task.getComment() + "'\n" +
-                    ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST")
-                    .allow("OPTIONS")
+            return Response.status(409).entity("Status: 409\nConflict\n" + 
+                    LocalDate.now().toString() + 
+                    "\n" + ex.toString())
                     .build();
         }
         catch (FutureWorkException | NotTheSameMonthException | WeekendNotEnabledException | 
@@ -309,26 +245,18 @@ public class TLOG16RSResource {
             log.error("{} : @POST, startTask : {} - {}.{}.{} - {} '{}' {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     task.getComment(), ex.toString());
-            return Response.status(409).entity("Status: 400\nBad Request\n" + LocalDate.now().toString() + "\n" + 
-                    "@POST, startTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
-                    "." + task.getDay() + " : " +  task.getStartTime() + " : '" + task.getComment() + "'\n" +
-                    ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST")
-                    .allow("OPTIONS")
+            return Response.status(409).entity("Status: 400\nBad Request\n" + 
+                    LocalDate.now().toString() +
+                    "\n" + ex.toString())
                     .build();
         }
         catch (NullPointerException ex) {
             log.error("{} : @POST, startTask : {} - {}.{}.{} - {} '{}' {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     task.getComment(), ex.toString());
-            return Response.status(409).entity("Status: 500\nInternal Server Error\n" + LocalDate.now().toString() +
-                    "\n@POST, startTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
-                    "." + task.getDay() + " : " +  task.getStartTime() + " : '" + task.getComment() + "'\n" +
-                    ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST")
-                    .allow("OPTIONS")
+            return Response.status(409).entity("Status: 500\nInternal Server Error\n" + 
+                    LocalDate.now().toString() +
+                    "\n" + ex.toString())
                     .build();
         }
     }
@@ -339,25 +267,17 @@ public class TLOG16RSResource {
     public Response finishTask(FinishTaskRB task){        
         
         try {        
-            Task finishedTask = services.finishThatThask(task);
+            services.finishThatThask(task);
             Ebean.update(services.getTimelogger());
-            return Response.ok(finishedTask)
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
-                    .build();
+            return Response.ok("Status: 200\nSucess").build();
         } 
         catch (NotNewMonthException | NotNewDateException ex) {
             log.error("{} : @PUT, startTask : {} - {}.{}.{} - {} - {} : {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     task.getEndTime(), ex.toString());
-            return Response.status(409).entity("Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" + 
-                    "@PUT, startTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
-                    "." + task.getDay() + " : " +  task.getStartTime() + " - " + task.getEndTime() + "\n" +
-                    ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
+            return Response.status(409).entity("Status: 409\nConflict\n" +
+                    LocalDate.now().toString() +
+                    "\n" + ex.toString())
                     .build();
         }   
         catch (FutureWorkException | NotTheSameMonthException | WeekendNotEnabledException |
@@ -366,26 +286,18 @@ public class TLOG16RSResource {
             log.error("{} : @PUT, startTask : {} - {}.{}.{} - {} - {} : {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     task.getEndTime(), ex.toString());
-            return Response.status(400).entity("Status: 400\nBad Request\n" + LocalDate.now().toString() + "\n" + 
-                    "@PUT, startTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
-                    "." + task.getDay() + " : " +  task.getStartTime() + " - " + task.getEndTime() + "\n" +
-                    ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
+            return Response.status(400).entity("Status: 400\nBad Request\n" +
+                    LocalDate.now().toString() + 
+                    "\n" + ex.toString())
                     .build();
         }    
         catch (NullPointerException ex) {
             log.error("{} : @PUT, startTask : {} - {}.{}.{} - {} - {} : {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     task.getEndTime(), ex.toString());
-            return Response.status(400).entity("Status: 500\nInternal Server Error\n" + LocalDate.now().toString() +
-                    "\n@PUT, startTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
-                    "." + task.getDay() + " : " +  task.getStartTime() + " - " + task.getEndTime() + "\n" +
-                    ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
+            return Response.status(400).entity("Status: 500\nInternal Server Error\n" +
+                    LocalDate.now().toString() +
+                    "\n" + ex.toString())
                     .build();
         } 
     }
@@ -396,24 +308,17 @@ public class TLOG16RSResource {
     public Response modifyTask(ModifyTaskRB task){
         
         try {            
-            Task modifiedTask = services.modifyTask(task); 
+            services.modifyTask(task); 
             Ebean.update(services.getTimelogger());   
-            return Response.ok(modifiedTask)
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
-                    .build();
+            return Response.ok("Status: 200\nSucess").build();
         } 
         catch (NotNewMonthException | NotNewDateException ex) {
             log.error("{} : @PUT, modifyTask : {} - {}.{}.{} - {} : {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     ex.toString());
-            return Response.status(409).entity("Status: 409\nConflict\n" + LocalDate.now().toString() + "\n" + 
-                    "@PUT, modifyTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
-                    "." + task.getDay() + " : " +  task.getStartTime() + "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
+            return Response.status(409).entity("Status: 409\nConflict\n" +
+                    LocalDate.now().toString() + 
+                    "\n" + ex.toString())
                     .build();
         } 
         catch (FutureWorkException | NotTheSameMonthException | WeekendNotEnabledException | 
@@ -422,24 +327,18 @@ public class TLOG16RSResource {
             log.error("{} : @PUT, modifyTask : {} - {}.{}.{} - {} : {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     ex.toString());
-            return Response.status(400).entity("Status: 400\nBad Request\n" + LocalDate.now().toString() + "\n" + 
-                    "@PUT, modifyTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
-                    "." + task.getDay() + " : " +  task.getStartTime() + "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
+            return Response.status(400).entity("Status: 400\nBad Request\n" +
+                    LocalDate.now().toString() + 
+                    "\n" +  ex.toString())
                     .build();
         } 
         catch (NullPointerException ex) {
             log.error("{} : @PUT, modifyTask : {} - {}.{}.{} - {} : {}", LocalDate.now(), 
                     task.getTaskId(), task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), 
                     ex.toString());
-            return Response.status(400).entity("Status: 500\nInternal Server Error\n" + LocalDate.now().toString() +
-                    "\n@PUT, modifyTask : " + task.getTaskId() + " : "  + task.getYear() + "." + task.getMonth() +
-                    "." + task.getDay() + " : " +  task.getStartTime() + "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
+            return Response.status(400).entity("Status: 500\nInternal Server Error\n" +
+                    LocalDate.now().toString() +
+                    "\n" + ex.toString())
                     .build();
         }
     }
@@ -452,17 +351,10 @@ public class TLOG16RSResource {
         try {            
             if(services.deleteThisTask(task)){
                 Ebean.update(services.getTimelogger());
-                return Response.ok("Task deleted")
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
-                    .build();
+                return Response.ok("Status: 200\nSucess\nTask deleted").build();
             }   
             else{
-                return Response.ok("No such Task")
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
+                return Response.ok("Status: 200\nSucess\nNo such Task")
                     .build();
             }
         } 
@@ -470,24 +362,18 @@ public class TLOG16RSResource {
                 EmptyTimeFieldException |  NotExpectedTimeOrderException | NegativeMinutesOfWorkException ex) {
             log.error("{} : @PUT, removeTask : {} - {}.{}.{} - {} : {}", LocalDate.now(), task.getTaskId(),
                     task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), ex.toString());
-            return Response.status(400).entity("Status: 400\nBad Request\n" + LocalDate.now().toString() + "\n"
-                    +  "@PUT, removeTask : " + task.getTaskId() + " : " + task.getStartTime() +
+            return Response.status(400).entity("Status: 400\nBad Request\n" +
+                    LocalDate.now().toString() +
                     "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
                     .build();
             
         } 
         catch (NullPointerException ex) {
             log.error("{} : @PUT, removeTask : {} - {}.{}.{} - {} : {}", LocalDate.now(), task.getTaskId(),
                     task.getYear(), task.getMonth(), task.getDay(), task.getStartTime(), ex.toString());
-            return Response.status(400).entity("Status: 500\nInternal Server Error\n" + LocalDate.now().toString() +
-                    "\n@PUT, removeTask : " + task.getTaskId() + " : " + task.getStartTime() +
+            return Response.status(400).entity("Status: 500\nInternal Server Error\n" +
+                    LocalDate.now().toString() +
                     "\n" + ex.toString())
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "PUT")
-                    .allow("OPTIONS")
                     .build();
             
         }
